@@ -4,11 +4,11 @@ mitm:
 
 webdriver:
   headless: False
-  use: edge
+  use: chrome
   edge:
     bin: msedgedriver.exe
   chrome:
-    bin: chromedriver
+    bin: /Users/blaketang/setup/chrome/chromedriver/chromedriver
     no_sandbox: True
 
 output:
@@ -27,7 +27,7 @@ output:
 
 live:
   rooms:
-    - ""
+    - "977133347170"
   users:
     - ""
 

@@ -6,3 +6,4 @@ if TYPE_CHECKING:
     from proxy.common import MessagePayload
 
 MESSAGE_QUEUE: "SimpleQueue[Optional[MessagePayload]]" = SimpleQueue()
+BROWSER_CMD_QUEUE: "SimpleQueue[Optional[MessagePayload]]" = SimpleQueue()
