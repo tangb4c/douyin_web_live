@@ -7,7 +7,8 @@ from mitmproxy.tools.dump import DumpMaster
 
 from config.helper import config
 from proxy.addon.danmaku_ws import DanmakuWebsocketAddon
-from proxy.queues import MESSAGE_QUEUE
+from proxy.addon.userinfo_http import UserInfoAddon
+from proxy.queues import MESSAGE_QUEUE, BROWSER_CMD_QUEUE
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -45,6 +46,7 @@ class ProxyManager:
 
     def _load_addon(self):
         self._mitm_instance.addons.add(DanmakuWebsocketAddon(MESSAGE_QUEUE))
+        self._mitm_instance.addons.add(UserInfoAddon(MESSAGE_QUEUE, BROWSER_CMD_QUEUE))
 
     def _start(self):
         asyncio.set_event_loop(self._loop)

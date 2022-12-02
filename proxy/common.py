@@ -7,3 +7,4 @@ class MessagePayload(object):
         self.timestamp: float = time.time()
         self.request_url: str = ""
         self.request_query: dict[str, str] = {}
+        self.text: str = ""

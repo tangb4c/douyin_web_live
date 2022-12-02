@@ -1,6 +1,11 @@
+from typing import Optional
+
 
 class BrowserCommand(object):
-    def __init__(self, body: bytes):
-        self.body = body
-        self.request_url: str = ""
-        self.request_query: dict[str, str] = {}
+    CMD_REDIRECT = "redirect-url"
+    CMD_REFRESH = "refresh"
+
+    def __init__(self, command: str, userid: Optional[str], url: Optional[str]):
+        self.command: str = command
+        self.user: str = userid
+        self.url: str = url

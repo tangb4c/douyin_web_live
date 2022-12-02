@@ -39,3 +39,6 @@ class IDriver():
 
     def screenshot(self, tab_handler: str = "") -> str:
         ...
+
+    def close(self, tab_handler: str = "") -> None:
+        ...

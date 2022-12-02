@@ -1,4 +1,6 @@
+import collections
 import gzip
+import json
 import threading
 from typing import TYPE_CHECKING
 
@@ -12,6 +14,7 @@ from messages.member import MemberMessage
 from messages.roomuserseq import RoomUserSeqMessage
 from messages.social import SocialMessage
 from output.debug import DebugWriter
+from output.flvdownload import FlvDownloader
 from output.print import Print
 from output.xml import XMLWriter
 from protobuf import message_pb2, wss_pb2
@@ -47,12 +50,15 @@ class OutputManager():
 
     def decode_payload(self, message: "MessagePayload"):
         try:
-            response = message_pb2.Response()
-            wss = wss_pb2.WssResponse()
-            wss.ParseFromString(message.body)
-            decompressed = gzip.decompress(wss.data)
-            response.ParseFromString(decompressed)
-            self.decode_message(response.messages)
+            if message.text:
+                self._decode_liveurl(message)
+            else:
+                response = message_pb2.Response()
+                wss = wss_pb2.WssResponse()
+                wss.ParseFromString(message.body)
+                decompressed = gzip.decompress(wss.data)
+                response.ParseFromString(decompressed)
+                self.decode_message(response.messages)
         except Exception as e:
             for writer in self._writer:
                 writer.error_output("ParseError", message.body, e)
@@ -128,3 +134,18 @@ class OutputManager():
 
         for writer in self._writer:
             writer.terminate()
+
+    def _decode_liveurl(self, message: MessagePayload):
+        cc = json.loads(message.text, object_pairs_hook=collections.OrderedDict)
+        flv_pull_urls = cc['data']['data'][0]['stream_url']['flv_pull_url']
+        if len(flv_pull_urls) > 0:
+            first_item = next(x for x in flv_pull_urls.items())
+            # FULL_HD1
+            live_resolution = first_item[0]
+            # http://pull-flv-l26.douyincdn.com/stage/stream-688531551841943691_or4.flv?expire=639330de&sign=74135965ff2e50585d7f085fd9ff1762
+            live_url = first_item[1]
+            flv = FlvDownloader(live_url)
+            flv.download()
+
+
+
