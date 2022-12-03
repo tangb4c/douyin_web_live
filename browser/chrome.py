@@ -1,3 +1,5 @@
+import os.path
+
 from selenium import webdriver
 from selenium.webdriver import Proxy, DesiredCapabilities
 from selenium.webdriver.common.proxy import ProxyType
@@ -17,8 +19,12 @@ class ChromeDriver(IDriver):
         options.add_argument('--proxy-server=%s:%s' % (config()['mitm']['host'], config()['mitm']['port']))
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--ignore-ssl-errors')
-        options.add_argument('--incognito')
-        options.add_experimental_option('excludeSwitches', ['ignore-certificate-errors'])
+        # options.add_argument('--incognito')
+        # 容易被反爬，加上这个选项
+        options.add_argument('--disable-features=UserAgentClientHint')
+        # options.add_experimental_option('excludeSwitches', ['ignore-certificate-errors'])
+        # 关闭 'enable-automation', 避免在js中被 window.navigator.webdriver 检测到
+        options.add_experimental_option('excludeSwitches', ['ignore-certificate-errors', 'enable-automation'])
         if config()['webdriver']['chrome']['no_sandbox']:
             options.add_argument('--no-sandbox')
         proxy = Proxy()
@@ -28,9 +34,10 @@ class ChromeDriver(IDriver):
         capabilities = DesiredCapabilities.CHROME
         proxy.add_to_capabilities(capabilities)
 
+        chrome_binary_path = os.path.expanduser(config()['webdriver']['chrome']['bin'])
         self.browser = webdriver.Chrome(options=options,
                                         desired_capabilities=capabilities,
-                                        executable_path=config()['webdriver']['chrome']['bin']
+                                        executable_path=chrome_binary_path
                                         )
 
     def new_tab(self) -> str:
@@ -62,5 +69,8 @@ class ChromeDriver(IDriver):
             return self.browser.get_screenshot_as_base64()
 
     def close(self, tab_handler: str = "") -> None:
-        with self.op_tab(tab_handler):
+        if tab_handler in self.browser.window_handles:
+            self.change_tab(tab_handler)
             self.browser.close()
+            if len(self.browser.window_handles) > 0:
+                self.browser.switch_to.window(self.browser.window_handles[0])

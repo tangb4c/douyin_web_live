@@ -4,7 +4,7 @@ from threading import Timer
 from typing import Optional
 
 from proxy.queues import BROWSER_CMD_QUEUE
-from common import BrowserCommand
+from browser.common import BrowserCommand
 
 
 class RandomPeriodSchedule:

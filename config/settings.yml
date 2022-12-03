@@ -8,7 +8,7 @@ webdriver:
   edge:
     bin: msedgedriver.exe
   chrome:
-    bin: /Users/blaketang/setup/chrome/chromedriver/chromedriver
+    bin: ~/setup/chrome/chromedriver/chromedriver
     no_sandbox: True
 
 output:
@@ -27,9 +27,9 @@ output:
 
 live:
   rooms:
-    - "977133347170"
-  users:
     - ""
+  users:
+    - "MS4wLjABAAAAgHrzfSvqQNWhrMk62iw-590bEs4WWK_Cy8bRTFujwXM"
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='

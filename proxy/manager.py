@@ -40,9 +40,9 @@ class ProxyManager:
     def terminate(self):
         if self._mitm_instance:
             self._mitm_instance.shutdown()
-        if self._loop:
-            if self._loop.is_running():
-                self._loop.stop()
+        # if self._loop:
+        #     if self._loop.is_running():
+        #         self._loop.stop()
 
     def _load_addon(self):
         self._mitm_instance.addons.add(DanmakuWebsocketAddon(MESSAGE_QUEUE))

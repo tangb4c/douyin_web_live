@@ -14,11 +14,14 @@ class UserInfoAddon:
         self._queue = queue
         self._cmd_queue = cmd_queue
 
-    def response(self, flow: http.HTTPFlow):
+    def response(self, flow: "http.HTTPFlow"):
         if flow.response.status_code != 200:
             return
+        for k, v in flow.request.headers.items(True):
+            print(f"{k}: {v}")
+
         # 主页URL
-        re_c = re.search(r'^https://www\.douyin\.com/user/(\w{30,100})', flow.request.url)
+        re_c = re.search(r'^https://www\.douyin\.com/user/([\w-]{30,100})', flow.request.url)
         if re_c:
             # 直播链接
             re_live = re.search(r'https://live\.douyin\.com/\d{8,20}\?[^"]+', flow.response.text)
@@ -29,12 +32,13 @@ class UserInfoAddon:
                 self._cmd_queue.put(browser_cmd)
                 return
         re_c = re.match(r'https://live\.douyin\.com/webcast/web/enter/', flow.request.url)
+        # print(flow.request.url)
         if re_c:
             # 直播流json
-            payload = MessagePayload(None)
+            payload = MessagePayload(flow.response.content)
             payload.request_url = flow.request.url
             payload.request_query = flow.request.query
-            payload.text = flow.request.text
+            payload.text = flow.response.text
             self._queue.put(payload)
 
     # def _parse_live_url_in_user_profile(self, flow: http.HTTPFlow):

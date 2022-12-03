@@ -135,9 +135,10 @@ class OutputManager():
         for writer in self._writer:
             writer.terminate()
 
-    def _decode_liveurl(self, message: MessagePayload):
+    def _decode_liveurl(self, message: "MessagePayload"):
         cc = json.loads(message.text, object_pairs_hook=collections.OrderedDict)
         flv_pull_urls = cc['data']['data'][0]['stream_url']['flv_pull_url']
+        print(flv_pull_urls)
         if len(flv_pull_urls) > 0:
             first_item = next(x for x in flv_pull_urls.items())
             # FULL_HD1

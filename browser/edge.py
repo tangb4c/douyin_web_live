@@ -59,5 +59,5 @@ class EdgeDriver(IDriver):
             return self.browser.get_screenshot_as_base64()
 
     def close(self, tab_handler: str = "") -> None:
-        with self.op_tab(tab_handler):
-            self.browser.close()
+        self.change_tab(tab_handler)
+        self.browser.close()

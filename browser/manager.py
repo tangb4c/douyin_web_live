@@ -31,7 +31,17 @@ class BrowserManager():
         self._thread: "Optional[threading.Thread]" = None
         self._should_exit = threading.Event()
 
+    def fake_init_browser(self):
+        print("fake_init_browser")
+        tab = TabInfo()
+        tab.tab_type = TabInfo.TAB_TYPE_OTHER
+        tab.user_id = "follow"
+
+        tab.url = "https://www.douyin.com/discover"
+        self.open_tab(tab)
+
     def init_browser(self):
+        print("init_browser")
         _live_config = config().get("live", {})
         _users = _live_config.get("users", [])
         if type(_users) is not list:
@@ -50,6 +60,8 @@ class BrowserManager():
         return self._driver
 
     def open_user_page(self, sec_user_id: str):
+        if not sec_user_id:
+            return
         tab = TabInfo()
         tab.tab_type = TabInfo.TAB_TYPE_USER
         tab.user_id = sec_user_id
@@ -62,6 +74,8 @@ class BrowserManager():
         self.open_tab(tab)
 
     def open_live_page(self, live_url: str):
+        if not live_url:
+            return
         tab = TabInfo()
         tab.tab_type = TabInfo.TAB_TYPE_LIVE
         if not urlparse(live_url).scheme:
@@ -137,7 +151,8 @@ def init_manager():
     _manager = BrowserManager()
     _random_period_timer = RandomPeriodSchedule()
 
-    threading.Thread(target=_manager.init_browser).start()
+    threading.Timer(5, _manager.init_browser).start()
+    threading.Thread(target=_manager.fake_init_browser).start()
     _random_period_timer.startTimer()
 
     return _manager
