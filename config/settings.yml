@@ -13,23 +13,22 @@ webdriver:
 
 output:
   use:
-    - print
     - xml
     - debug
   xml:
-    save_path: "./"
+    save_path: "/Users/blaketang/Movies/刘平直播11月/others/"
     file_pattern: "{room_id}_{ts}.xml"
   debug:
     save_path:
-      error: "./error"
-      unknown: "./debug"
+      error: "/Users/blaketang/Movies/刘平直播11月/others/error"
+      unknown: "/Users/blaketang/Movies/刘平直播11月/others/debug"
       known: False
 
 live:
   rooms:
     - ""
   users:
-    - "MS4wLjABAAAAgHrzfSvqQNWhrMk62iw-590bEs4WWK_Cy8bRTFujwXM"
+    - "MS4wLjABAAAAqqJWUXfl14OZztg_Ixn9g2vtI4RsKZzTagl6bOjyL20"
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='

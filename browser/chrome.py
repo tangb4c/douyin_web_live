@@ -42,7 +42,7 @@ class ChromeDriver(IDriver):
 
     def new_tab(self) -> str:
         current_window_handles = self.browser.window_handles
-        self.browser.execute_script("window.open('')")
+        self.browser.execute_script("window.open('', '_blank')")
         new_window_handles = self.browser.window_handles
         for _handle in new_window_handles:
             if _handle not in current_window_handles:

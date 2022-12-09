@@ -4,6 +4,7 @@ import json
 import threading
 from typing import TYPE_CHECKING
 
+from browser.common import BrowserCommand
 from config.helper import config
 from messages.chat import ChatMessage
 from messages.control import ControlMessage
@@ -14,11 +15,11 @@ from messages.member import MemberMessage
 from messages.roomuserseq import RoomUserSeqMessage
 from messages.social import SocialMessage
 from output.debug import DebugWriter
-from output.flvdownload import FlvDownloader
+from output.videodownloader import FlvDownloader, HlsDownloader
 from output.print import Print
 from output.xml import XMLWriter
 from protobuf import message_pb2, wss_pb2
-from proxy.queues import MESSAGE_QUEUE
+from proxy.queues import MESSAGE_QUEUE, BROWSER_CMD_QUEUE
 
 if TYPE_CHECKING:
     from typing import Type, Optional, List
@@ -137,16 +138,32 @@ class OutputManager():
 
     def _decode_liveurl(self, message: "MessagePayload"):
         cc = json.loads(message.text, object_pairs_hook=collections.OrderedDict)
-        flv_pull_urls = cc['data']['data'][0]['stream_url']['flv_pull_url']
-        print(flv_pull_urls)
-        if len(flv_pull_urls) > 0:
-            first_item = next(x for x in flv_pull_urls.items())
-            # FULL_HD1
-            live_resolution = first_item[0]
-            # http://pull-flv-l26.douyincdn.com/stage/stream-688531551841943691_or4.flv?expire=639330de&sign=74135965ff2e50585d7f085fd9ff1762
-            live_url = first_item[1]
-            flv = FlvDownloader(live_url)
-            flv.download()
+        if True:
+            flv_pull_urls = cc['data']['data'][0]['stream_url']['flv_pull_url']
+            print(flv_pull_urls)
+            if len(flv_pull_urls) > 0:
+                first_item = next(x for x in flv_pull_urls.items())
+                # FULL_HD1
+                live_resolution = first_item[0]
+                # http://pull-flv-l26.douyincdn.com/stage/stream-688531551841943691_or4.flv?expire=639330de&sign=74135965ff2e50585d7f085fd9ff1762
+                live_url = first_item[1]
+                print(f"开始下载：resolution:{live_resolution} url:{live_url}")
+                cmd = BrowserCommand(BrowserCommand.CMD_STOPLIVE, None, None)
+                BROWSER_CMD_QUEUE.put(cmd)
+
+                flv = FlvDownloader(live_url)
+                threading.Thread(target=flv.download).start()
+
+        else:
+            hls_pull_url = cc['data']['data'][0]['stream_url']['hls_pull_url']
+            # http://pull-hls-f26.douyincdn.com/stage/stream-688563396677206698_or4.m3u8?expire=639a89b7&sign=945cee6e9626cad639ebc9d9acababb6
+            print(f"hls_pull_url: {hls_pull_url}")
+            if hls_pull_url:
+                hls = HlsDownloader(hls_pull_url)
+                threading.Thread(target=hls.download).start()
+
+
+
 
 
 

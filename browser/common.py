@@ -2,8 +2,12 @@ from typing import Optional
 
 
 class BrowserCommand(object):
+    # 重定向到live直播间，并关闭对应的user窗口
     CMD_REDIRECT = "redirect-url"
     CMD_REFRESH = "refresh"
+    CMD_STOPLIVE = "stop-live-refresh"
+    # 打开user窗口
+    CMD_OPENUSER = "open-user"
 
     def __init__(self, command: str, userid: Optional[str], url: Optional[str]):
         self.command: str = command

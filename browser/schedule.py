@@ -1,3 +1,4 @@
+import datetime
 import random
 import threading
 from threading import Timer
@@ -22,12 +23,19 @@ class RandomPeriodSchedule:
         if self._should_exit.is_set():
             return
 
-        if self._timer:
+        # 仅在工作时间内刷新
+        if self._timer and self._is_worktime():
             cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, None, None)
             BROWSER_CMD_QUEUE.put(cmd)
         # next
         self._timer = Timer(random.Random().randint(60, 120), self.startTimer)
         self._timer.start()
+
+    def _is_worktime(self):
+        begin = datetime.time.fromisoformat("08:00:00")
+        end = datetime.time.fromisoformat("12:30:00")
+        now = datetime.datetime.now().time()
+        return begin <= now and now <= end
 
     def terminate(self):
         self._should_exit.set()

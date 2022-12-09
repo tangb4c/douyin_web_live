@@ -36,12 +36,13 @@ class BrowserManager():
         tab = TabInfo()
         tab.tab_type = TabInfo.TAB_TYPE_OTHER
         tab.user_id = "follow"
-
-        tab.url = "https://www.douyin.com/discover"
+        tab.url = "https://www.douyin.com/"
         self.open_tab(tab)
 
     def init_browser(self):
         print("init_browser")
+        self.close_alltabs()
+
         _live_config = config().get("live", {})
         _users = _live_config.get("users", [])
         if type(_users) is not list:
@@ -78,6 +79,7 @@ class BrowserManager():
             return
         tab = TabInfo()
         tab.tab_type = TabInfo.TAB_TYPE_LIVE
+        tab.need_refresh = True
         if not urlparse(live_url).scheme:
             # 单独的房间号
             live_url = "https://live.douyin.com/" + live_url
@@ -92,6 +94,11 @@ class BrowserManager():
         self.driver.open_url(tab_info.url, tab_handler)
         if tab_info not in self._tabs:
             self._tabs.append(tab_info)
+
+    def close_alltabs(self):
+        for x in self._tabs:
+            self.driver.close(x.tab_handler)
+        self._tabs.clear()
 
     def start_loop(self):
         self._should_exit.clear()
@@ -111,6 +118,11 @@ class BrowserManager():
                 self._handle_redirect(message)
             elif message.command == BrowserCommand.CMD_REFRESH:
                 self._handle_refresh(message)
+            elif message.command == BrowserCommand.CMD_OPENUSER:
+                self._handle_openuser(message)
+            elif message.command == BrowserCommand.CMD_STOPLIVE:
+                self._handle_stoplive_refresh(message)
+
     def terminate(self):
         if not self._should_exit.is_set():
             self._should_exit.set()
@@ -118,19 +130,34 @@ class BrowserManager():
         global _random_period_timer
         _random_period_timer.terminate()
 
-
     def _handle_redirect(self, message):
         tabinfo = next((x for x in self._tabs if x.user_id == message.user), None)
         if tabinfo:
-            self.driver.close(tabinfo.tab_handler)
-            self._tabs.remove(tabinfo)
+            # self.driver.close(tabinfo.tab_handler)
+            # self._tabs.remove(tabinfo)
+            tabinfo.need_refresh = False
             self.open_live_page(message.url)
 
     def _handle_refresh(self, message):
         # 刷新
         for x in self._tabs:
-            if x.tab_type == TabInfo.TAB_TYPE_USER:
+            if x.need_refresh:
                 self.driver.refresh(x.tab_handler)
+                print(f"刷新：{x.user_id} {x.url}")
+
+    def _handle_openuser(self, message):
+        for x in self._tabs[:]:
+            if x.tab_type == TabInfo.TAB_TYPE_USER:
+                x.need_refresh = True
+            if x.tab_type == TabInfo.TAB_TYPE_LIVE:
+                # 顺便把live全给关了，这里逻辑写得比较烂，将就着用吧
+                self.driver.close(x.tab_handler)
+                self._tabs.remove(x)
+
+    def _handle_stoplive_refresh(self, message):
+        for x in self._tabs:
+            if x.tab_type == TabInfo.TAB_TYPE_LIVE:
+                x.need_refresh = False
 
 
 class TabInfo(object):

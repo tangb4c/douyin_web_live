@@ -17,8 +17,8 @@ class UserInfoAddon:
     def response(self, flow: "http.HTTPFlow"):
         if flow.response.status_code != 200:
             return
-        for k, v in flow.request.headers.items(True):
-            print(f"{k}: {v}")
+        # for k, v in flow.request.headers.items(True):
+        #     print(f"{k}: {v}")
 
         # 主页URL
         re_c = re.search(r'^https://www\.douyin\.com/user/([\w-]{30,100})', flow.request.url)
