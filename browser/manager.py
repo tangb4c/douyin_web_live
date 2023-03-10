@@ -1,3 +1,4 @@
+import logging
 import threading
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
@@ -15,6 +16,9 @@ if TYPE_CHECKING:
 
 _manager: "Optional[BrowserManager]" = None
 _random_period_timer: "Optional[RandomPeriodSchedule]" = None
+
+logger = logging.getLogger(__name__)
+print(f"loggerName: {logger.name}")
 
 class BrowserManager():
     _mapping: "dict[str, Type[IDriver]]" = {
@@ -143,7 +147,7 @@ class BrowserManager():
         for x in self._tabs:
             if x.need_refresh:
                 self.driver.refresh(x.tab_handler)
-                print(f"刷新：{x.user_id} {x.url}")
+                logger.info(f"刷新：{x.user_id} {x.url}")
 
     def _handle_openuser(self, message):
         for x in self._tabs[:]:

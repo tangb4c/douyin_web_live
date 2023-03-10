@@ -1,7 +1,12 @@
+import logging
 from typing import Optional
 
-
+logger = logging.getLogger(__name__)
+print(f"loggerName: {logger.name}")
 class BrowserCommand(object):
+    def __str__(self) -> str:
+        return f"BrowserCommand{{cmd:{self.command} user:{self.user} url:{self.url}}}"
+
     # 重定向到live直播间，并关闭对应的user窗口
     CMD_REDIRECT = "redirect-url"
     CMD_REFRESH = "refresh"

@@ -86,3 +86,4 @@ error
 __pycache__
 *.py[cod]
 *.xml
+log/

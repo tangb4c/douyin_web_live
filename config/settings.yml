@@ -16,19 +16,27 @@ output:
     - xml
     - debug
   xml:
-    save_path: "/Users/blaketang/Movies/刘平直播11月/others/"
+    save_path: "/Users/blaketang/Movies/刘平直播3月/others/"
     file_pattern: "{room_id}_{ts}.xml"
   debug:
     save_path:
-      error: "/Users/blaketang/Movies/刘平直播11月/others/error"
-      unknown: "/Users/blaketang/Movies/刘平直播11月/others/debug"
+      error: "/Users/blaketang/Movies/刘平直播3月/others/error"
+      unknown: "/Users/blaketang/Movies/刘平直播3月/others/debug"
       known: False
-
+  video:
+    save_path: "/Users/blaketang/Movies/刘平直播3月"
+    file_prefix: "刘平直播3月"
 live:
   rooms:
     - ""
   users:
-    - "MS4wLjABAAAAqqJWUXfl14OZztg_Ixn9g2vtI4RsKZzTagl6bOjyL20"
+    # - "MS4wLjABAAAAqqJWUXfl14OZztg_Ixn9g2vtI4RsKZzTagl6bOjyL20"
+    # - "MS4wLjABAAAA89SmSpUVzt1MNDUdKJnRj4V_SpQYT9A7vfn6xOPuhI6ReW6yXpQYpXiL02l5kLaU"
+    - "MS4wLjABAAAAASwv6hRZg6nhloy9k5GVsqd--Sh4E1whTh6fc8E7X2M"
+    # - "MS4wLjABAAAAXhJFSqRbOwRj72VtO4aFz7UEIGemZRmP9GjcoRZKgic"
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='
+
+basic:
+  logfile: log/douyin-live.log

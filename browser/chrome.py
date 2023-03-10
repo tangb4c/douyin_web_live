@@ -25,6 +25,21 @@ class ChromeDriver(IDriver):
         # options.add_experimental_option('excludeSwitches', ['ignore-certificate-errors'])
         # 关闭 'enable-automation', 避免在js中被 window.navigator.webdriver 检测到
         options.add_experimental_option('excludeSwitches', ['ignore-certificate-errors', 'enable-automation'])
+        # 规避检测 selenium修改window.navigator.webdriver
+        # https://blog.csdn.net/qq_35866846/article/details/113185737
+        options.add_argument("--disable-blink-features=AutomationControlled")
+
+        # 【自动化】Selenium如何隐藏“Chrome is being controlled...” - 知乎
+        # https://zhuanlan.zhihu.com/p/89451454
+        # 有时浏览器会弹窗：disable developer mode extensions，使用下面的选项，可以禁止该弹窗
+        options.add_experimental_option('useAutomationExtension', False)
+        # 隐藏“Save password”弹窗
+        options.add_experimental_option("prefs", {"profile.password_manager_enabled": False, "credentials_enable_service": False})
+
+        # 禁止加载图片，提升爬取速度
+        # prefs = {"profile.managed_default_content_settings.images": 2}
+        # options.add_experimental_option("prefs", prefs)
+
         if config()['webdriver']['chrome']['no_sandbox']:
             options.add_argument('--no-sandbox')
         proxy = Proxy()
@@ -39,6 +54,8 @@ class ChromeDriver(IDriver):
                                         desired_capabilities=capabilities,
                                         executable_path=chrome_binary_path
                                         )
+        # Remove navigator.webdriver Flag using JavaScript
+        # self.browser.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
     def new_tab(self) -> str:
         current_window_handles = self.browser.window_handles

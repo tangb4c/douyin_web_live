@@ -1,11 +1,26 @@
 import atexit
+import logging
+import logging.config
 import signal
 
 from browser.manager import init_manager as init_browser_manager
+from config.helper import config
 from output.manager import OutputManager
 from proxy.manager import init_manager as init_proxy_manager
 
+
+def _init_log():
+    logging.config.fileConfig('logging.conf')
+
+    # logging.basicConfig(
+    #     format="%(asctime)s [%(levelname)s] %(message)s",
+    #     handlers=[
+    #         logging.FileHandler(config()["basic"]["logfile"]),
+    #         logging.StreamHandler()
+    #     ]
+    # )
 if __name__ == '__main__':
+    _init_log()
     proxy_manager = init_proxy_manager()
     proxy_manager.start_loop()
     browser_manager = init_browser_manager()
