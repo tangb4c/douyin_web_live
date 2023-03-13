@@ -36,7 +36,7 @@ class UserInfoAddon:
                 self._cmd_queue.put(browser_cmd)
                 logger.info(f"命令推入队列。{browser_cmd}")
                 return
-        re_c = re.match(r'https://live\.douyin\.com/webcast/room/web/enter/', flow.request.url)
+        re_c = re.match(r'https://live\.douyin\.com/webcast/[\w/]+/enter/', flow.request.url)
         if re_c:
             # 直播流json
             payload = MessagePayload(flow.response.content)
@@ -48,16 +48,20 @@ class UserInfoAddon:
 
     # def _parse_live_url_in_user_profile(self, flow: http.HTTPFlow):
     def record(self, flow: "http.HTTPFlow"):
+        parts = flow.request.url.split('?', 1)
+        only_url = parts[0]
         if 'douyin.com' not in flow.request.host:
-            logger.debug(f"{flow.request.url} content-length:0")
+            logger.debug(f"{only_url}")
+            flow.request.pretty_url
         elif len(flow.response.content) == 0:
-            logger.debug(f"{flow.request.url} content-length:0")
+            logger.debug(f"{only_url} content-length:0")
         elif 'Content-Type' in flow.response.headers:
             content_type: str = flow.response.headers['Content-Type']
             allowed = ('text/', '/json')
             if any(x for x in allowed if x in content_type):
-                logger.debug(f"{flow.request.url} body:{flow.response.text}")
+
+                logger.debug(f"{flow.request.url} body:\n{flow.response.text}")
             else:
                 logger.debug(f"{flow.request.url} content-type:{content_type}")
         else:
-            logger.debug(f"{flow.request.url} headers:{flow.response.headers}")
+            logger.debug(f"{only_url} No content-type")

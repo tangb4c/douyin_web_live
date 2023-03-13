@@ -77,6 +77,14 @@ class BrowserManager():
             # 单独的用户id
             tab.url = "https://www.douyin.com/user/" + sec_user_id
         self.open_tab(tab)
+        # script_txt = '''
+        # console.log("I am here!");
+        # setTimeout(() => {
+        #   document.location.reload();
+        # }, 12*1000);
+        # '''
+        # self.driver.execute_script(script_txt, tab.tab_handler)
+        # logger.error("Enter execute_script")
 
     def open_live_page(self, live_url: str):
         if not live_url:
@@ -146,8 +154,9 @@ class BrowserManager():
         # 刷新
         for x in self._tabs:
             if x.need_refresh:
+                # self.driver.open_url(x.url, x.tab_handler)
                 self.driver.refresh(x.tab_handler)
-                logger.info(f"刷新：{x.user_id} {x.url}")
+                logger.info(f"刷新：{x.user_id} {x.url} handler:{type(x.tab_handler)} {x.tab_handler}")
 
     def _handle_openuser(self, message):
         for x in self._tabs[:]:

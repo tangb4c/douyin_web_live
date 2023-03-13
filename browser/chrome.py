@@ -91,3 +91,7 @@ class ChromeDriver(IDriver):
             self.browser.close()
             if len(self.browser.window_handles) > 0:
                 self.browser.switch_to.window(self.browser.window_handles[0])
+
+    def execute_script(self, script: str, tab_handler: str = "") -> None:
+        with self.op_tab(tab_handler):
+            self.browser.execute_script(script)

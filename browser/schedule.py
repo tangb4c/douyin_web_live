@@ -30,7 +30,7 @@ class RandomPeriodSchedule:
             cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, None, None)
             BROWSER_CMD_QUEUE.put(cmd)
         # next
-        next_refresh_interval = random.randint(60, 200)
+        next_refresh_interval = random.randint(60, 250)
         logger.info(f"下次刷新间隔:{next_refresh_interval}秒")
         self._timer = Timer(next_refresh_interval, self.startTimer)
         self._timer.start()

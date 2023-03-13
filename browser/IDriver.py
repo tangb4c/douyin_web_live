@@ -32,7 +32,8 @@ class IDriver():
             self.change_tab(tab_handler)
             yield self
         finally:
-            self.change_tab(cur_handle)
+            # self.change_tab(cur_handle)
+            pass
 
     def refresh(self, tab_handler: str = ""):
         ...
@@ -41,4 +42,7 @@ class IDriver():
         ...
 
     def close(self, tab_handler: str = "") -> None:
+        ...
+
+    def execute_script(self, script: str, tab_handler: str = "") -> None:
         ...
