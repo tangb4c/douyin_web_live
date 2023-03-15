@@ -7,8 +7,10 @@ from typing import Optional
 
 from proxy.queues import BROWSER_CMD_QUEUE
 from browser.common import BrowserCommand
+
 logger = logging.getLogger(__name__)
 print(f"loggerName: {logger.name}")
+
 
 class RandomPeriodSchedule:
     def __init__(self):
@@ -26,18 +28,23 @@ class RandomPeriodSchedule:
             return
 
         # 仅在工作时间内刷新
-        if self._timer and self._is_worktime():
-            cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, None, None)
-            BROWSER_CMD_QUEUE.put(cmd)
+        if self._timer:
+            if self._is_worktime():
+                cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, None, None)
+                BROWSER_CMD_QUEUE.put(cmd)
+            else:
+                logger.info(f"不在工作时间，跳过消息推送")
+        else:
+            logger.info(f"timer为null")
         # next
-        next_refresh_interval = random.randint(60, 250)
+        next_refresh_interval = random.randint(150, 480)
         logger.info(f"下次刷新间隔:{next_refresh_interval}秒")
         self._timer = Timer(next_refresh_interval, self.startTimer)
         self._timer.start()
 
     def _is_worktime(self):
         begin = datetime.time.fromisoformat("08:00:00")
-        end = datetime.time.fromisoformat("16:30:00")
+        end = datetime.time.fromisoformat("22:30:00")
         now = datetime.datetime.now().time()
         return begin <= now and now <= end
 

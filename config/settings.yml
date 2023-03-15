@@ -10,33 +10,35 @@ webdriver:
   chrome:
     bin: ~/setup/chrome/chromedriver/chromedriver
     no_sandbox: True
+    user_data_dir: ~/output/douyin_web_live/douyin_selenium
 
 output:
-  use:
-    - xml
-    - debug
+  # 支持
+  # - xml
+  # - debug
+  # 两种形式
+  use: []
   xml:
-    save_path: "/Users/blaketang/Movies/刘平直播3月/others/"
-    file_pattern: "{room_id}_{ts}.xml"
+    save_path: ~/output/douyin_web_live/subtitles
+    file_pattern: /{room_id}_{ts}.xml
   debug:
     save_path:
-      error: "/Users/blaketang/Movies/刘平直播3月/others/error"
-      unknown: "/Users/blaketang/Movies/刘平直播3月/others/debug"
+      error: ~/output/douyin_web_live/douyin_web_live_log/error
+      unknown: ~/output/douyin_web_live/douyin_web_live_log/debug
       known: False
   video:
-    save_path: "/Users/blaketang/Movies/刘平直播3月"
-    file_prefix: "刘平直播3月"
+    save_path: ~/output/douyin_web_live/刘平直播
+    file_prefix: 刘平直播
 live:
   rooms:
     - ""
   users:
     # - "MS4wLjABAAAAqqJWUXfl14OZztg_Ixn9g2vtI4RsKZzTagl6bOjyL20"
     # - "MS4wLjABAAAA89SmSpUVzt1MNDUdKJnRj4V_SpQYT9A7vfn6xOPuhI6ReW6yXpQYpXiL02l5kLaU"
-    - "MS4wLjABAAAAASwv6hRZg6nhloy9k5GVsqd--Sh4E1whTh6fc8E7X2M"
+    - MS4wLjABAAAAASwv6hRZg6nhloy9k5GVsqd--Sh4E1whTh6fc8E7X2M
     # - "MS4wLjABAAAAXhJFSqRbOwRj72VtO4aFz7UEIGemZRmP9GjcoRZKgic"
+    #MS4wLjABAAAA_BNHk7z-Cb6siiuXuGb068BrWZP0y303EoMyXlFPhdVGozhlm836OvGEERpe9DAt
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='
 
-basic:
-  logfile: log/douyin-live.log

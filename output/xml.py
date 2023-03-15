@@ -1,3 +1,5 @@
+import os
+
 from config.helper import config
 from output.IOutput import IOutput
 from typing import IO
@@ -12,7 +14,11 @@ class XMLWriter(IOutput):
     def __init__(self):
         self._file_mappings: "dict[str, IO[str]]" = {}
         self.time_mappings: "dict[str, float]" = {}
-        self._file_name_pattern: "str" = config()['output']['xml']['file_pattern']
+        self._save_path: "str" = os.path.expanduser(config()['output']['xml']['save_path'])
+        if not os.path.isdir(self._save_path):
+            os.makedirs(self._save_path)
+        file_pattern =  config()['output']['xml']['file_pattern']
+        self._file_name_pattern: "str" = os.path.join(self._save_path, file_pattern)
 
     def _get_fd_by_room_id(self, room_id: str) -> IO[str]:
         if room_id in self._file_mappings:

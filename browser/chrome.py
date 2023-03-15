@@ -1,10 +1,11 @@
 import os.path
+import platform
 
 from selenium import webdriver
 from selenium.webdriver import Proxy, DesiredCapabilities
 from selenium.webdriver.common.proxy import ProxyType
 
-from config.helper import config
+from config.helper import config, getPath
 from browser.IDriver import IDriver
 from selenium.webdriver.chrome.options import Options
 
@@ -13,9 +14,35 @@ class ChromeDriver(IDriver):
     def __init__(self):
         super(ChromeDriver, self).__init__()
         options = Options()
-        if config()['webdriver']['headless']:
+        if platform.system() == 'Linux':
             options.add_argument("--headless")
-            options.add_argument("--window-size=1920,1080")
+            options.add_argument("--disable-gpu")
+            options.add_argument("--remote-debugging-port=59314")
+            options.add_argument("--remote-debugging-address=0.0.0.0")
+            # 禁止图片和css加载
+            # prefs = {"profile.managed_default_content_settings.images": 2, 'permissions.default.stylesheet': 2}
+            # options.add_experimental_option("prefs", prefs)
+            # options.add_argument('blink-settings=imagesEnabled=false')
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+            options.add_argument("--disable-browser-side-navigation")
+            options.add_argument("disable-infobars")
+            # 不用等待，因为我们没用到dom
+            options.page_load_strategy = 'none'
+            #
+            options.add_argument("--window-size=800,600")
+            options.binary_location = "/opt/google/chrome/chrome"
+        elif config()['webdriver']['headless']:
+            options.add_argument("--headless")
+            options.add_argument("--window-size=1280,720")
+        # 可以保存cookie
+        options.add_argument(f"user-data-dir={getPath('webdriver.chrome.user_data_dir', create_if_not_exist=True)}")
+        # user-agent
+        # 默认：
+        # Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/111.0.5563.64 Safari/537.36
+        # options.add_argument('user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"')
+        options.add_argument('user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.5563.64 Safari/537.36"')
+
         options.add_argument('--proxy-server=%s:%s' % (config()['mitm']['host'], config()['mitm']['port']))
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--ignore-ssl-errors')
@@ -52,7 +79,7 @@ class ChromeDriver(IDriver):
         chrome_binary_path = os.path.expanduser(config()['webdriver']['chrome']['bin'])
         self.browser = webdriver.Chrome(options=options,
                                         desired_capabilities=capabilities,
-                                        executable_path=chrome_binary_path
+                                        executable_path=chrome_binary_path,
                                         )
         # Remove navigator.webdriver Flag using JavaScript
         # self.browser.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")

@@ -1,4 +1,5 @@
 import logging
+import signal
 import threading
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
@@ -19,6 +20,7 @@ _random_period_timer: "Optional[RandomPeriodSchedule]" = None
 
 logger = logging.getLogger(__name__)
 print(f"loggerName: {logger.name}")
+
 
 class BrowserManager():
     _mapping: "dict[str, Type[IDriver]]" = {
@@ -77,6 +79,7 @@ class BrowserManager():
             # 单独的用户id
             tab.url = "https://www.douyin.com/user/" + sec_user_id
         self.open_tab(tab)
+        logger.debug(f"打开了用户标签页:{tab}")
         # script_txt = '''
         # console.log("I am here!");
         # setTimeout(() => {
@@ -118,22 +121,30 @@ class BrowserManager():
         self._thread.start()
 
     def _handle(self):
-        while True:
-            message = BROWSER_CMD_QUEUE.get()
-            if self._should_exit.is_set():
-                if self._driver:
-                    self._driver.terminate()
-                break
-            if message is None:
-                continue
-            if message.command == BrowserCommand.CMD_REDIRECT:
-                self._handle_redirect(message)
-            elif message.command == BrowserCommand.CMD_REFRESH:
-                self._handle_refresh(message)
-            elif message.command == BrowserCommand.CMD_OPENUSER:
-                self._handle_openuser(message)
-            elif message.command == BrowserCommand.CMD_STOPLIVE:
-                self._handle_stoplive_refresh(message)
+        logger.debug('开始处理消息队列')
+
+        try:
+            while True:
+                message = BROWSER_CMD_QUEUE.get()
+                if self._should_exit.is_set():
+                    if self._driver:
+                        self._driver.terminate()
+                    break
+                if message is None:
+                    logger.debug("收到None消息")
+                    continue
+                logger.debug(f"收到消息:{message}")
+                if message.command == BrowserCommand.CMD_REDIRECT:
+                    self._handle_redirect(message)
+                elif message.command == BrowserCommand.CMD_REFRESH:
+                    self._handle_refresh(message)
+                elif message.command == BrowserCommand.CMD_OPENUSER:
+                    self._handle_openuser(message)
+                elif message.command == BrowserCommand.CMD_STOPLIVE:
+                    self._handle_stoplive_refresh(message)
+        except:
+            logger.exception(f"发生异常, 发送退出信号")
+            signal.raise_signal(signal.SIGTERM)
 
     def terminate(self):
         if not self._should_exit.is_set():
@@ -153,10 +164,13 @@ class BrowserManager():
     def _handle_refresh(self, message):
         # 刷新
         for x in self._tabs:
+            logger.debug(f"tab对象信息 {x}")
             if x.need_refresh:
                 # self.driver.open_url(x.url, x.tab_handler)
                 self.driver.refresh(x.tab_handler)
-                logger.info(f"刷新：{x.user_id} {x.url} handler:{type(x.tab_handler)} {x.tab_handler}")
+                logger.debug(f"刷新完成：{x}")
+            else:
+                logger.debug(f"没有刷新. {x.need_refresh} {x}")
 
     def _handle_openuser(self, message):
         for x in self._tabs[:]:
@@ -164,8 +178,12 @@ class BrowserManager():
                 x.need_refresh = True
             if x.tab_type == TabInfo.TAB_TYPE_LIVE:
                 # 顺便把live全给关了，这里逻辑写得比较烂，将就着用吧
-                self.driver.close(x.tab_handler)
-                self._tabs.remove(x)
+                try:
+                    self.driver.close(x.tab_handler)
+                except:
+                    logger.exception(f"异常发生。{message}")
+                finally:
+                    self._tabs.remove(x)
 
     def _handle_stoplive_refresh(self, message):
         for x in self._tabs:
@@ -184,6 +202,9 @@ class TabInfo(object):
         self.url: str = ""
         self.tab_type: str = self.TAB_TYPE_OTHER
         self.need_refresh = True
+
+    def __str__(self) -> str:
+        return f"TabInfo: 刷新开关：{self.need_refresh} {self.tab_type} {self.user_id} {self.url} handler:{self.tab_handler}"
 
 
 def init_manager():
