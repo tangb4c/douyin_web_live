@@ -7,8 +7,8 @@ from urllib.parse import urlparse
 from browser.chrome import ChromeDriver
 from browser.common import BrowserCommand
 from browser.edge import EdgeDriver
-from browser.schedule import RandomPeriodSchedule
-from config.helper import config
+from browser.schedule import RandomPeriodSchedule, ScheduleManager
+from config.helper import config, getConfig
 from proxy.queues import BROWSER_CMD_QUEUE
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from browser.IDriver import IDriver
 
 _manager: "Optional[BrowserManager]" = None
-_random_period_timer: "Optional[RandomPeriodSchedule]" = None
+_random_period_timer: ScheduleManager = ScheduleManager()
 
 logger = logging.getLogger(__name__)
 print(f"loggerName: {logger.name}")
@@ -59,7 +59,8 @@ class BrowserManager():
         for _user in _users:
             self.open_user_page(str(_user))
         for _room in _rooms:
-            self.open_live_page(str(_room))
+            # TODO: 这里的userid为空
+            self.open_live_page(str(_room), None)
         self._handle()
 
     @property
@@ -89,10 +90,11 @@ class BrowserManager():
         # self.driver.execute_script(script_txt, tab.tab_handler)
         # logger.error("Enter execute_script")
 
-    def open_live_page(self, live_url: str):
+    def open_live_page(self, live_url: str, userid):
         if not live_url:
             return
         tab = TabInfo()
+        tab.user_id = userid
         tab.tab_type = TabInfo.TAB_TYPE_LIVE
         tab.need_refresh = True
         if not urlparse(live_url).scheme:
@@ -127,8 +129,6 @@ class BrowserManager():
             while True:
                 message = BROWSER_CMD_QUEUE.get()
                 if self._should_exit.is_set():
-                    if self._driver:
-                        self._driver.terminate()
                     break
                 if message is None:
                     logger.debug("收到None消息")
@@ -145,13 +145,17 @@ class BrowserManager():
         except:
             logger.exception(f"发生异常, 发送退出信号")
             signal.raise_signal(signal.SIGTERM)
+            logger.info(f"已发送退出信号")
+        finally:
+            if self._driver:
+                self._driver.terminate()
+                logger.info(f"已退出chrome")
 
     def terminate(self):
+        _random_period_timer.terminate()
         if not self._should_exit.is_set():
             self._should_exit.set()
             BROWSER_CMD_QUEUE.put(None)
-        global _random_period_timer
-        _random_period_timer.terminate()
 
     def _handle_redirect(self, message):
         tabinfo = next((x for x in self._tabs if x.user_id == message.user), None)
@@ -159,24 +163,24 @@ class BrowserManager():
             # self.driver.close(tabinfo.tab_handler)
             # self._tabs.remove(tabinfo)
             tabinfo.need_refresh = False
-            self.open_live_page(message.url)
+            self.open_live_page(message.url, message.user)
 
     def _handle_refresh(self, message):
         # 刷新
         for x in self._tabs:
-            logger.debug(f"tab对象信息 {x}")
-            if x.need_refresh:
+            #logger.debug(f"tab对象信息 {x}")
+            if x.need_refresh and ( x.user_id == None or x.user_id == message.user):
                 # self.driver.open_url(x.url, x.tab_handler)
                 self.driver.refresh(x.tab_handler)
                 logger.debug(f"刷新完成：{x}")
-            else:
-                logger.debug(f"没有刷新. {x.need_refresh} {x}")
+            #else:
+            #    logger.debug(f"没有刷新. {x.need_refresh} {x}")
 
     def _handle_openuser(self, message):
         for x in self._tabs[:]:
-            if x.tab_type == TabInfo.TAB_TYPE_USER:
+            if x.tab_type == TabInfo.TAB_TYPE_USER and x.user_id == message.user:
                 x.need_refresh = True
-            if x.tab_type == TabInfo.TAB_TYPE_LIVE:
+            if x.tab_type == TabInfo.TAB_TYPE_LIVE and x.user_id == message.user:
                 # 顺便把live全给关了，这里逻辑写得比较烂，将就着用吧
                 try:
                     self.driver.close(x.tab_handler)
@@ -187,7 +191,7 @@ class BrowserManager():
 
     def _handle_stoplive_refresh(self, message):
         for x in self._tabs:
-            if x.tab_type == TabInfo.TAB_TYPE_LIVE:
+            if x.tab_type == TabInfo.TAB_TYPE_LIVE and x.user_id == message.user:
                 x.need_refresh = False
 
 
@@ -208,13 +212,18 @@ class TabInfo(object):
 
 
 def init_manager():
-    global _manager, _random_period_timer
+    global _manager
     _manager = BrowserManager()
-    _random_period_timer = RandomPeriodSchedule()
 
     threading.Timer(5, _manager.init_browser).start()
     threading.Thread(target=_manager.fake_init_browser).start()
-    _random_period_timer.startTimer()
+
+    # 添加定时刷新timer
+    _users = getConfig("live.users")
+    if not isinstance(_users, list):
+        _users = [_users]
+    for x in _users:
+        _random_period_timer.add_timer(str(x))
 
     return _manager
 

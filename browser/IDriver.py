@@ -12,7 +12,9 @@ class IDriver():
         self.terminate()
 
     def terminate(self):
-        self.browser.quit()
+        if self.browser:
+            self.browser.quit()
+            self.browser = None
 
     def new_tab(self) -> str:
         ...

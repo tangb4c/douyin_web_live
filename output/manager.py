@@ -1,6 +1,7 @@
 import collections
 import gzip
 import json
+import logging
 import threading
 from typing import TYPE_CHECKING
 
@@ -15,11 +16,14 @@ from messages.member import MemberMessage
 from messages.roomuserseq import RoomUserSeqMessage
 from messages.social import SocialMessage
 from output.debug import DebugWriter
-from output.videodownloader import FlvDownloader, HlsDownloader
+from output.videodownloader import FlvDownloader, HlsDownloader, VideoInfo
 from output.print import Print
 from output.xml import XMLWriter
 from protobuf import message_pb2, wss_pb2
 from proxy.queues import MESSAGE_QUEUE, BROWSER_CMD_QUEUE
+
+logger = logging.getLogger(__name__)
+print(f"loggerName: {logger.name}")
 
 if TYPE_CHECKING:
     from typing import Type, Optional, List
@@ -34,7 +38,7 @@ class OutputManager():
         "debug": DebugWriter,
     }
     _writer: "List[IOutput]" = []
-    _thread: "Optional[threading.Thread]"= None
+    _thread: "Optional[threading.Thread]" = None
     _should_exit = threading.Event()
 
     def __init__(self):
@@ -139,20 +143,16 @@ class OutputManager():
     def _decode_liveurl(self, message: "MessagePayload"):
         cc = json.loads(message.text, object_pairs_hook=collections.OrderedDict)
         if True:
-            flv_pull_urls = cc['data']['data'][0]['stream_url']['flv_pull_url']
-            print(flv_pull_urls)
-            if len(flv_pull_urls) > 0:
-                first_item = next(x for x in flv_pull_urls.items())
-                # FULL_HD1
-                live_resolution = first_item[0]
-                # http://pull-flv-l26.douyincdn.com/stage/stream-688531551841943691_or4.flv?expire=639330de&sign=74135965ff2e50585d7f085fd9ff1762
-                live_url = first_item[1]
-                print(f"开始下载：resolution:{live_resolution} url:{live_url}")
-                cmd = BrowserCommand(BrowserCommand.CMD_STOPLIVE, None, None)
-                BROWSER_CMD_QUEUE.put(cmd)
+            video = self._parse(cc)
+            if video == None:
+                logger.warning(f"没有解析出video链接，注意检查. {message.text}")
+                return
+            print(f"开始下载：{video}")
+            cmd = BrowserCommand(BrowserCommand.CMD_STOPLIVE, video.sec_uid, None)
+            BROWSER_CMD_QUEUE.put(cmd)
 
-                flv = FlvDownloader(live_url)
-                threading.Thread(target=flv.download).start()
+            flv = FlvDownloader(video)
+            threading.Thread(target=flv.download).start()
 
         else:
             hls_pull_url = cc['data']['data'][0]['stream_url']['hls_pull_url']
@@ -162,8 +162,17 @@ class OutputManager():
                 hls = HlsDownloader(hls_pull_url)
                 threading.Thread(target=hls.download).start()
 
-
-
-
-
-
+    def _parse(self, cc: dict):
+        flv_pull_urls = cc['data']['data'][0]['stream_url']['flv_pull_url']
+        print(flv_pull_urls)
+        if len(flv_pull_urls) > 0:
+            first_item = next(x for x in flv_pull_urls.items())
+            video = VideoInfo()
+            # FULL_HD1
+            video.live_resolution = first_item[0]
+            # http://pull-flv-l26.douyincdn.com/stage/stream-688531551841943691_or4.flv?expire=639330de&sign=74135965ff2e50585d7f085fd9ff1762
+            video.url = first_item[1]
+            video.sec_uid = cc['data']['user']['sec_uid']
+            video.nickname = cc['data']['user']['nickname']
+            return video
+        return None

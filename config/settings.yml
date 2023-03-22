@@ -23,12 +23,12 @@ output:
     file_pattern: /{room_id}_{ts}.xml
   debug:
     save_path:
-      error: ~/output/douyin_web_live/douyin_web_live_log/error
-      unknown: ~/output/douyin_web_live/douyin_web_live_log/debug
+      error: ~/output/douyin_web_live/log/error
+      unknown: ~/output/douyin_web_live/log/debug
       known: False
   video:
-    save_path: ~/output/douyin_web_live/刘平直播
-    file_prefix: 刘平直播
+    save_path: ~/output/douyin_web_live/liuping-live
+    file_prefix: ''
 live:
   rooms:
     - ""
@@ -36,8 +36,15 @@ live:
     # - "MS4wLjABAAAAqqJWUXfl14OZztg_Ixn9g2vtI4RsKZzTagl6bOjyL20"
     # - "MS4wLjABAAAA89SmSpUVzt1MNDUdKJnRj4V_SpQYT9A7vfn6xOPuhI6ReW6yXpQYpXiL02l5kLaU"
     - MS4wLjABAAAAASwv6hRZg6nhloy9k5GVsqd--Sh4E1whTh6fc8E7X2M
-    # - "MS4wLjABAAAAXhJFSqRbOwRj72VtO4aFz7UEIGemZRmP9GjcoRZKgic"
+    # 老唐谈育儿
+    # - MS4wLjABAAAAXhJFSqRbOwRj72VtO4aFz7UEIGemZRmP9GjcoRZKgic
     #MS4wLjABAAAA_BNHk7z-Cb6siiuXuGb068BrWZP0y303EoMyXlFPhdVGozhlm836OvGEERpe9DAt
+    # 杨博士讲健康
+    # - MS4wLjABAAAAFwP4ObHPz3u-MU9hQ8NOFav0tBdhMt6HiBgGtEsTqVZymHqN4aZl_syHED4zbrch
+    # 正熙Vimber
+    # - MS4wLjABAAAARBpvgOeWNAUMrvZ3x1lExSa_FvFIjaBPgG5Ttr-XM9GT7Zc_92Z9dcPv0wOOEwdW
+    # 晓光谈心理
+    # - MS4wLjABAAAADg7lO8bfhLPMT2o98I2iKICL_NbK8MiAwJWYbgZuKSg
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='

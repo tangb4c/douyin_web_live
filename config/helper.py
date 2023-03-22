@@ -10,12 +10,15 @@ def config():
         return yaml.load(f, Loader=yaml.UnsafeLoader)
 
 
-def getConfig(key: str):
+def getConfig(key: str, default=None):
     items = key.split('.')
     cc = config()
     for x in items:
         if x not in cc:
-            raise NameError(f"{key} 配置项不存在，请检查配置")
+            if default == None:
+                raise NameError(f"{key} 配置项不存在，请检查配置")
+            else:
+                return default
         cc = cc.get(x)
     return cc
 

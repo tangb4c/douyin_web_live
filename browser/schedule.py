@@ -3,7 +3,7 @@ import logging
 import random
 import threading
 from threading import Timer
-from typing import Optional
+from typing import Optional, List
 
 from proxy.queues import BROWSER_CMD_QUEUE
 from browser.common import BrowserCommand
@@ -13,7 +13,8 @@ print(f"loggerName: {logger.name}")
 
 
 class RandomPeriodSchedule:
-    def __init__(self):
+    def __init__(self, userid):
+        self._userid = userid
         self._timer: Optional[Timer] = None
         self._should_exit = threading.Event()
 
@@ -30,7 +31,7 @@ class RandomPeriodSchedule:
         # 仅在工作时间内刷新
         if self._timer:
             if self._is_worktime():
-                cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, None, None)
+                cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self._userid, None)
                 BROWSER_CMD_QUEUE.put(cmd)
             else:
                 logger.info(f"不在工作时间，跳过消息推送")
@@ -44,7 +45,7 @@ class RandomPeriodSchedule:
 
     def _is_worktime(self):
         begin = datetime.time.fromisoformat("08:00:00")
-        end = datetime.time.fromisoformat("22:30:00")
+        end = datetime.time.fromisoformat("20:30:00")
         now = datetime.datetime.now().time()
         return begin <= now and now <= end
 
@@ -52,3 +53,19 @@ class RandomPeriodSchedule:
         self._should_exit.set()
         if self._timer:
             self._timer.cancel()
+
+
+class ScheduleManager:
+    def __init__(self):
+        self.timers: "List[RandomPeriodSchedule]" = list()
+
+    def add_timer(self, userid):
+        t = RandomPeriodSchedule(userid)
+        t.startTimer()
+        self.timers.append(t)
+        logger.info(f"添加定时刷新timer, useid: {userid}")
+
+    def terminate(self):
+        for x in self.timers:
+            x.terminate()
+        self.timers.clear()
