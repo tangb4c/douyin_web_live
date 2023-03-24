@@ -5,6 +5,8 @@ import logging
 import threading
 from typing import TYPE_CHECKING
 
+import jmespath
+
 from browser.common import BrowserCommand
 from config.helper import config
 from messages.chat import ChatMessage
@@ -163,16 +165,25 @@ class OutputManager():
                 threading.Thread(target=hls.download).start()
 
     def _parse(self, cc: dict):
-        flv_pull_urls = cc['data']['data'][0]['stream_url']['flv_pull_url']
-        print(flv_pull_urls)
-        if len(flv_pull_urls) > 0:
-            first_item = next(x for x in flv_pull_urls.items())
-            video = VideoInfo()
-            # FULL_HD1
-            video.live_resolution = first_item[0]
-            # http://pull-flv-l26.douyincdn.com/stage/stream-688531551841943691_or4.flv?expire=639330de&sign=74135965ff2e50585d7f085fd9ff1762
-            video.url = first_item[1]
-            video.sec_uid = cc['data']['user']['sec_uid']
-            video.nickname = cc['data']['user']['nickname']
-            return video
+        try:
+            flv_pull_urls = cc['data']['data'][0]['stream_url']['flv_pull_url']
+            stream_data_str = jmespath.search('data.data[0].stream_url.live_core_sdk_data.pull_data.stream_data', cc)
+            stream_data = json.loads(stream_data_str)
+            session_id = jmespath.search('common.session_id', stream_data)
+            print(flv_pull_urls)
+            if len(flv_pull_urls) > 0:
+                first_item = next(x for x in flv_pull_urls.items())
+                video = VideoInfo()
+                # FULL_HD1
+                video.live_resolution = first_item[0]
+                # http://pull-flv-l26.douyincdn.com/stage/stream-688531551841943691_or4.flv?expire=639330de&sign=74135965ff2e50585d7f085fd9ff1762
+                if 'auth_key=' in first_item[1]:
+                    video.url = first_item[1]
+                else:
+                    video.url = first_item[1] + f'&session_id={session_id}'
+                video.sec_uid = cc['data']['user']['sec_uid']
+                video.nickname = cc['data']['user']['nickname']
+                return video
+        except:
+            logger.exception(f"解析时发生异常。 {cc}")
         return None

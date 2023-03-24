@@ -13,6 +13,8 @@ class BrowserCommand(object):
     CMD_STOPLIVE = "stop-live-refresh"
     # 打开user窗口
     CMD_OPENUSER = "open-user"
+    # 快速心跳检测
+    CMD_QUICKMONITOR = "quick-monitor"
 
     def __init__(self, command: str, userid: Optional[str], url: Optional[str]):
         self.command: str = command

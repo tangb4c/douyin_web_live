@@ -17,12 +17,21 @@ class RandomPeriodSchedule:
         self._userid = userid
         self._timer: Optional[Timer] = None
         self._should_exit = threading.Event()
+        self._quick_monitor_count = 0  # 快速监测次数
 
     def reset(self):
         self._should_exit.clear()
         if self._timer:
             self._timer.cancel()
             self._timer = None
+
+    def enable_quick_watch_mode(self):
+        self._quick_monitor_count = 10
+        logger.info(f"已开启快速检测模式, {self._userid}")
+
+    @property
+    def userid(self):
+        return self._userid
 
     def startTimer(self):
         if self._should_exit.is_set():
@@ -38,14 +47,19 @@ class RandomPeriodSchedule:
         else:
             logger.info(f"timer为null")
         # next
-        next_refresh_interval = random.randint(150, 480)
+        if self._quick_monitor_count > 0:
+            self._quick_monitor_count -= 1
+            next_refresh_interval = random.randint(5, 20)
+        else:
+            next_refresh_interval = random.randint(120, 330)
+
         logger.info(f"下次刷新间隔:{next_refresh_interval}秒")
         self._timer = Timer(next_refresh_interval, self.startTimer)
         self._timer.start()
 
     def _is_worktime(self):
-        begin = datetime.time.fromisoformat("08:00:00")
-        end = datetime.time.fromisoformat("20:30:00")
+        begin = datetime.time.fromisoformat("07:00:00")
+        end = datetime.time.fromisoformat("21:00:00")
         now = datetime.datetime.now().time()
         return begin <= now and now <= end
 
@@ -64,6 +78,11 @@ class ScheduleManager:
         t.startTimer()
         self.timers.append(t)
         logger.info(f"添加定时刷新timer, useid: {userid}")
+
+    def enable_quick_monitor(self, userid):
+        for x in self.timers:
+            if x.userid == userid:
+                x.enable_quick_watch_mode()
 
     def terminate(self):
         for x in self.timers:

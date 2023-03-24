@@ -27,7 +27,7 @@ output:
       unknown: ~/output/douyin_web_live/log/debug
       known: False
   video:
-    save_path: ~/output/douyin_web_live/liuping-live
+    save_path: ~/output/douyin_web_live/live
     file_prefix: ''
 live:
   rooms:
@@ -45,6 +45,10 @@ live:
     # - MS4wLjABAAAARBpvgOeWNAUMrvZ3x1lExSa_FvFIjaBPgG5Ttr-XM9GT7Zc_92Z9dcPv0wOOEwdW
     # 晓光谈心理
     # - MS4wLjABAAAADg7lO8bfhLPMT2o98I2iKICL_NbK8MiAwJWYbgZuKSg
+    # 素老虎
+    # - MS4wLjABAAAAEtWjo3mpoqV43lfn1h5_np_h4NQIjmMQcjRv7c_wbIE
+    # 家师卫道
+    - MS4wLjABAAAAU2jY6EbVxGVhrBsiJZAQW9Hg6rhOceFE4kdMMaS6YUmwX5gLl5yAujY7jlmMkL8l
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='

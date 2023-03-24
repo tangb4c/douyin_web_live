@@ -142,6 +142,8 @@ class BrowserManager():
                     self._handle_openuser(message)
                 elif message.command == BrowserCommand.CMD_STOPLIVE:
                     self._handle_stoplive_refresh(message)
+                elif message.command == BrowserCommand.CMD_QUICKMONITOR:
+                    self._handle_quick_monitor(message)
         except:
             logger.exception(f"发生异常, 发送退出信号")
             signal.raise_signal(signal.SIGTERM)
@@ -168,12 +170,12 @@ class BrowserManager():
     def _handle_refresh(self, message):
         # 刷新
         for x in self._tabs:
-            #logger.debug(f"tab对象信息 {x}")
-            if x.need_refresh and ( x.user_id == None or x.user_id == message.user):
+            # logger.debug(f"tab对象信息 {x}")
+            if x.need_refresh and (x.user_id == None or x.user_id == message.user):
                 # self.driver.open_url(x.url, x.tab_handler)
                 self.driver.refresh(x.tab_handler)
                 logger.debug(f"刷新完成：{x}")
-            #else:
+            # else:
             #    logger.debug(f"没有刷新. {x.need_refresh} {x}")
 
     def _handle_openuser(self, message):
@@ -193,6 +195,9 @@ class BrowserManager():
         for x in self._tabs:
             if x.tab_type == TabInfo.TAB_TYPE_LIVE and x.user_id == message.user:
                 x.need_refresh = False
+
+    def _handle_quick_monitor(self, message):
+        _random_period_timer.enable_quick_monitor(message.user)
 
 
 class TabInfo(object):

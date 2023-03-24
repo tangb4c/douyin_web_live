@@ -14,7 +14,28 @@ from proxy.queues import BROWSER_CMD_QUEUE
 logger = logging.getLogger(__name__)
 print(f"loggerName: {logger.name}")
 
+
+# 下载锁，一个主播同时只能下载一次
+class DownloadLock:
+    def __init__(self):
+        self._userlist = set()
+        self._lock = threading.Lock()
+
+    def acquire(self, user):
+        with self._lock:
+            if user in self._userlist:
+                return False
+            else:
+                self._userlist.add(user)
+                return True
+
+    def release(self, user):
+        with self._lock:
+            self._userlist.remove(user)
+
+
 _encoding_event = threading.Lock()
+_download_lock = DownloadLock()
 
 
 class VideoInfo:
@@ -41,9 +62,14 @@ class FlvDownloader:
             raise Exception(f"视频保存路径未设置")
 
     def download(self):
-        self._encoding = _encoding_event.acquire(blocking=False)
-        logger.info(f"编码锁锁定状态：{self._encoding}")
+        if not _download_lock.acquire(self.video.sec_uid):
+            logger.warning(f"当前主播正在下载，同时只允许1个下载")
+            return
 
+        self._encoding = _encoding_event.acquire(blocking=False)
+        logger.info(f"启动下载：{self.video.sec_uid} 编码锁锁定状态：{self._encoding}")
+
+        result = "下载未完成"
         try:
             cmd = self._get_ffmpeg_cmd()
             logger.info(cmd)
@@ -52,14 +78,23 @@ class FlvDownloader:
         except:
             logger.exception("编码发生异常")
 
+        _download_lock.release(self.video.sec_uid)
+
         if self._encoding:
             self._encoding = False
             _encoding_event.release()
             logger.info(f"清除编码锁定标记")
 
-        logger.info(f"视频下载结果: {result}")
+        logger.info(f"释放下载锁，以及清除编码锁定标记。视频下载结果: {result}")
 
+        # 开启刷新（并关闭live窗口)
         cmd = BrowserCommand(BrowserCommand.CMD_OPENUSER, self.video.sec_uid, None)
+        BROWSER_CMD_QUEUE.put(cmd)
+        # 强制刷新
+        cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self.video.sec_uid, None)
+        BROWSER_CMD_QUEUE.put(cmd)
+        # 开启快速刷新
+        cmd = BrowserCommand(BrowserCommand.CMD_QUICKMONITOR, self.video.sec_uid, None)
         BROWSER_CMD_QUEUE.put(cmd)
 
     def getOutputFileName(self):
