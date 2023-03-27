@@ -35,6 +35,7 @@ live:
   users:
     # - "MS4wLjABAAAAqqJWUXfl14OZztg_Ixn9g2vtI4RsKZzTagl6bOjyL20"
     # - "MS4wLjABAAAA89SmSpUVzt1MNDUdKJnRj4V_SpQYT9A7vfn6xOPuhI6ReW6yXpQYpXiL02l5kLaU"
+    # 平老师深层动力育儿学
     - MS4wLjABAAAAASwv6hRZg6nhloy9k5GVsqd--Sh4E1whTh6fc8E7X2M
     # 老唐谈育儿
     # - MS4wLjABAAAAXhJFSqRbOwRj72VtO4aFz7UEIGemZRmP9GjcoRZKgic
@@ -49,6 +50,8 @@ live:
     # - MS4wLjABAAAAEtWjo3mpoqV43lfn1h5_np_h4NQIjmMQcjRv7c_wbIE
     # 家师卫道
     - MS4wLjABAAAAU2jY6EbVxGVhrBsiJZAQW9Hg6rhOceFE4kdMMaS6YUmwX5gLl5yAujY7jlmMkL8l
+    # 车主明
+    # - MS4wLjABAAAA-dNYW4hbo72DdGqYcwvDBho-s_zYv-KB-5TWp91RS3A
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='
