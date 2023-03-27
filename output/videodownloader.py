@@ -66,7 +66,8 @@ class FlvDownloader:
             logger.warning(f"当前主播正在下载，同时只允许1个下载")
             return
 
-        self._encoding = _encoding_event.acquire(blocking=False)
+        # TODO 暂时停止编码
+        # self._encoding = _encoding_event.acquire(blocking=False)
         logger.info(f"启动下载：{self.video.sec_uid} 编码锁锁定状态：{self._encoding}")
 
         result = "下载未完成"
@@ -126,17 +127,16 @@ accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
                     '{self.getOutputFileName()}'"""
 
     def _get_encoding_param(self):
-        return '-c copy'
-        # if self._encoding:
-        #     if 'tlinux' in platform.release():
-        #         return """-c:v libx264 -crf 28 -preset veryslow -ar 32000 -ac 1 -c:a libfdk_aac -profile:a aac_he -b:a 28k"""
-        #     elif 'Linux' == platform.system():
-        #         return '-c copy'
-        #     else:
-        #         return '-c:v libx264 -crf 28 -preset veryslow -af aresample=resampler=soxr -ar 32000 -ac 1 -c:a libfdk_aac -profile:a aac_he -b:a 28k'
-        # else:
-        #     logger.info("已有其它编码正在进行")
-        #     return '-c copy'
+        if self._encoding:
+            if 'tlinux' in platform.release():
+                return """-c:v libx264 -crf 28 -preset veryslow -ar 32000 -ac 1 -c:a libfdk_aac -profile:a aac_he -b:a 28k"""
+            elif 'Linux' == platform.system():
+                return '-c copy'
+            else:
+                return '-c:v libx264 -crf 28 -preset veryslow -af aresample=resampler=soxr -ar 32000 -ac 1 -c:a libfdk_aac -profile:a aac_he -b:a 28k'
+        else:
+            logger.info("已有其它编码正在进行")
+            return '-c copy'
 
 
 class HlsDownloader:

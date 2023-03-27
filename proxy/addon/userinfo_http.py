@@ -44,7 +44,7 @@ class UserInfoAddon:
         # 主页URL
         if self._process_user_page(flow):
             return
-        # 直播间链接
+        # 直播间链接(先暂时屏蔽）
         # https://live.douyin.com/146677777346
         # if self._process_live_page(flow):
         #     return
