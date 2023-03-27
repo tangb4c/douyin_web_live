@@ -178,9 +178,9 @@ class OutputManager():
                 video.live_resolution = first_item[0]
                 # http://pull-flv-l26.douyincdn.com/stage/stream-688531551841943691_or4.flv?expire=639330de&sign=74135965ff2e50585d7f085fd9ff1762
                 if 'auth_key=' in first_item[1]:
-                    video.url = first_item[1]
-                else:
                     video.url = first_item[1] + f'&session_id={session_id}'
+                else:
+                    video.url = first_item[1]
                 video.sec_uid = cc['data']['user']['sec_uid']
                 video.nickname = cc['data']['user']['nickname']
                 return video
