@@ -56,7 +56,7 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       -fflags +genpts \
       -i "$video_file" \
       -metadata title="$title" \
-      -c:v libx264 -crf 28 -preset slow \
+      -c:v libx264 -crf 28 -preset veryslow \
       -ac 1 -c:a libfdk_aac -profile:a aac_he -b:a 28k \
       "$output_file"
     if [ $? -eq 0 ]; then

@@ -51,7 +51,7 @@ class RandomPeriodSchedule:
             self._quick_monitor_count -= 1
             next_refresh_interval = random.randint(10, 25)
         else:
-            next_refresh_interval = random.randint(120, 360)
+            next_refresh_interval = random.randint(130, 360)
 
         logger.info(f"下次刷新间隔:{next_refresh_interval}秒")
         self._timer = Timer(next_refresh_interval, self.startTimer)

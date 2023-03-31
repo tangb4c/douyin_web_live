@@ -52,6 +52,10 @@ live:
     - MS4wLjABAAAAU2jY6EbVxGVhrBsiJZAQW9Hg6rhOceFE4kdMMaS6YUmwX5gLl5yAujY7jlmMkL8l
     # 车主明
     # - MS4wLjABAAAA-dNYW4hbo72DdGqYcwvDBho-s_zYv-KB-5TWp91RS3A
+    # 吕晓彤
+    - MS4wLjABAAAAqejZxZKopDBDEzxcQp-_1b019FfM05C0NzjQNpc5ylU
+    # 产品老曾
+    - MS4wLjABAAAA7YPC9dXg8FUn8pQyjPmNOQ5FQ8bzW0Zx4TRDLOEexISBMINkAAfLTsnTDp9l3oQb
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='
