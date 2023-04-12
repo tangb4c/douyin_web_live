@@ -16,6 +16,13 @@ if pgrep ffmpeg >/dev/null;then
   msg '已有ffmpeg正在运行，本次运行中止'
   exit 1
 fi
+# 8分钟后再次检查
+sleep 480
+if pgrep ffmpeg >/dev/null;then
+  msg '再次检测：已有ffmpeg正在运行，本次运行中止'
+  exit 1
+fi
+
 # 怎么正经的实现shell脚本单例运行？ - 腾讯云开发者社区-腾讯云
 # https://cloud.tencent.com/developer/article/1634267
 # 单实例运行
@@ -48,8 +55,10 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
     mv -fv "$video_file" "$output_dir"
   else
     title=$(basename "$video_file")
-    output_file="$output_dir/${title%%.*}.h264.mp4"
+    output_file="$output_dir/${title%%.*}.h264.NR.mp4"
     msg "视频:$video_file\t转换为:$output_file"
+    #       -ac 1 -c:a libfdk_aac -profile:a aac_he_v2 -b:a 28k \
+    # 适合分享、对话场景      -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -b:a 24k
     taskset -c 1-14 /usr/local/bin/ffmpeg \
       -hide_banner \
       -y \
@@ -57,7 +66,7 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       -i "$video_file" \
       -metadata title="$title" \
       -c:v libx264 -crf 28 -preset veryslow \
-      -ac 1 -c:a libfdk_aac -profile:a aac_he -b:a 28k \
+      -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -b:a 24k \
       "$output_file"
     if [ $? -eq 0 ]; then
       msg "ffmpeg 编码成功，删除原始文件"
