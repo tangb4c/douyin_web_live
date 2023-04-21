@@ -9,33 +9,15 @@ from datetime import datetime
 
 from browser.common import BrowserCommand
 from config.helper import getPath, getConfig
+from config.share import g_download_lock
 from proxy.queues import BROWSER_CMD_QUEUE
 
 logger = logging.getLogger(__name__)
 print(f"loggerName: {logger.name}")
 
 
-# 下载锁，一个主播同时只能下载一次
-class DownloadLock:
-    def __init__(self):
-        self._userlist = set()
-        self._lock = threading.Lock()
-
-    def acquire(self, user):
-        with self._lock:
-            if user in self._userlist:
-                return False
-            else:
-                self._userlist.add(user)
-                return True
-
-    def release(self, user):
-        with self._lock:
-            self._userlist.remove(user)
-
 
 _encoding_event = threading.Lock()
-_download_lock = DownloadLock()
 
 
 class VideoInfo:
@@ -62,7 +44,7 @@ class FlvDownloader:
             raise Exception(f"视频保存路径未设置")
 
     def download(self):
-        if not _download_lock.acquire(self.video.sec_uid):
+        if not g_download_lock.acquire(self.video.sec_uid):
             logger.warning(f"当前主播正在下载，同时只允许1个下载")
             return
 
@@ -79,7 +61,7 @@ class FlvDownloader:
         except:
             logger.exception("编码发生异常")
 
-        _download_lock.release(self.video.sec_uid)
+        g_download_lock.release(self.video.sec_uid)
 
         if self._encoding:
             self._encoding = False
@@ -118,7 +100,7 @@ accept-encoding: gzip, deflate, br
 accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
 
 """
-        return f"""ffmpeg -y -icy 0 \
+        return f"""ffmpeg -y -hide_banner -loglevel warning -icy 0 \
                     -referer "https://live.douyin.com/" \
                     -user_agent "{user_agent}" \
                     -headers "{header}" \
@@ -135,7 +117,7 @@ accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
             else:
                 return '-c:v libx264 -crf 28 -preset veryslow -af aresample=resampler=soxr -ar 32000 -ac 1 -c:a libfdk_aac -profile:a aac_he -b:a 28k'
         else:
-            logger.info("已有其它编码正在进行")
+            # logger.info("已有其它编码正在进行")
             return '-c copy'
 
 

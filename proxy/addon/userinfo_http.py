@@ -17,6 +17,7 @@ print(f"loggerName: {logger.name}")
 class UserInfoAddon:
     banned_host = ('googleapis.com', 'douyinpic.com', 'pendah.bytetos.com')
     banned_url = ('https://www.douyin.com/sw.js',
+                  'https://live.douyin.com/service-worker.js',
                   'https://mssdk.bytedance.com/web/report',
                   'https://api.feelgood.cn/athena/survey/platform/action/report/')
 
@@ -56,20 +57,23 @@ class UserInfoAddon:
         parts = flow.request.url.split('?', 1)
         only_url = parts[0]
         if 'douyin.com' not in flow.request.host:
-            logger.debug(f"{only_url}")
+            # logger.debug(f"{only_url}")
+            pass
         elif len(flow.response.content) == 0:
-            logger.debug(f"{only_url} content-length:0")
+            # logger.debug(f"{only_url} content-length:0")
+            pass
         elif 'Content-Type' in flow.response.headers:
             content_type: str = flow.response.headers['Content-Type']
             allowed = ('text/', '/json')
             if any(x for x in allowed if x in content_type):
-
-                logger.debug(f"{flow.request.url} body:\n{flow.response.text}")
+                logger.debug(f"{flow.request.url}")
+                # logger.debug(f"{flow.request.url} body:\n{flow.response.text}")
             else:
-
-                logger.debug(f"{flow.request.url} content-type:{content_type}")
+                # logger.debug(f"{flow.request.url} content-type:{content_type}")
+                pass
         else:
-            logger.debug(f"{only_url} No content-type")
+            # logger.debug(f"{only_url} No content-type")
+            pass
 
     def _process_live_page(self, flow):
         re_c = re.match(r'https://live.douyin.com/\d{1,20}', flow.request.url)

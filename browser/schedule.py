@@ -5,6 +5,7 @@ import threading
 from threading import Timer
 from typing import Optional, List
 
+from config.share import g_download_lock
 from proxy.queues import BROWSER_CMD_QUEUE
 from browser.common import BrowserCommand
 
@@ -40,8 +41,11 @@ class RandomPeriodSchedule:
         # 仅在工作时间内刷新
         if self._timer:
             if self._is_worktime():
-                cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self._userid, None)
-                BROWSER_CMD_QUEUE.put(cmd)
+                if not g_download_lock.is_locked(self._userid):
+                    cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self._userid, None)
+                    BROWSER_CMD_QUEUE.put(cmd)
+                else:
+                    logger.info(f"{self.userid} 已被锁住，跳过")
             else:
                 logger.info(f"不在工作时间，跳过消息推送")
         else:

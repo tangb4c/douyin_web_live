@@ -133,7 +133,7 @@ class BrowserManager():
                 if message is None:
                     logger.debug("收到None消息")
                     continue
-                logger.debug(f"收到消息:{message}")
+                # logger.debug(f"收到消息:{message}")
                 if message.command == BrowserCommand.CMD_REDIRECT:
                     self._handle_redirect(message)
                 elif message.command == BrowserCommand.CMD_REFRESH:
