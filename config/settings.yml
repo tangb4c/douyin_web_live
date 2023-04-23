@@ -35,8 +35,50 @@ live:
   users:
     # - "MS4wLjABAAAAqqJWUXfl14OZztg_Ixn9g2vtI4RsKZzTagl6bOjyL20"
     # - "MS4wLjABAAAA89SmSpUVzt1MNDUdKJnRj4V_SpQYT9A7vfn6xOPuhI6ReW6yXpQYpXiL02l5kLaU"
-    # 平老师深层动力育儿学
-    - MS4wLjABAAAAASwv6hRZg6nhloy9k5GVsqd--Sh4E1whTh6fc8E7X2M
+    - name: 平老师深层动力育儿学
+      sec_uid: MS4wLjABAAAAASwv6hRZg6nhloy9k5GVsqd--Sh4E1whTh6fc8E7X2M
+      monitor_mode: watch   # 当不在monitor范围内，继续检测
+      monitor_plan:
+        - time_begin: 12:56:00
+          time_end: 13:20:00
+          interval_min: 15
+          interval_max: 30
+    - name: 家师卫道
+      sec_uid: MS4wLjABAAAAU2jY6EbVxGVhrBsiJZAQW9Hg6rhOceFE4kdMMaS6YUmwX5gLl5yAujY7jlmMkL8l
+      monitor_mode: stop
+      monitor_plan:
+        - time_begin: 06:58:00
+          time_end: 07:30:00
+          interval_min: 30
+          interval_max: 60
+    - name: 吕晓彤
+      sec_uid: MS4wLjABAAAAqejZxZKopDBDEzxcQp-_1b019FfM05C0NzjQNpc5ylU
+      monitor_mode: stop
+      monitor_plan:
+        - time_begin: 21:25:00
+          time_end: 22:00:00
+          interval_min: 30
+          interval_max: 60
+          week:
+            - 1
+        - time_begin: 19:57:00
+          time_end: 20:20:00
+          interval_min: 30
+          interval_max: 60
+          week:
+            - 4
+    - name: 产品老曾
+      sec_uid: MS4wLjABAAAA7YPC9dXg8FUn8pQyjPmNOQ5FQ8bzW0Zx4TRDLOEexISBMINkAAfLTsnTDp9l3oQb
+      monitor_mode: stop
+      monitor_plan:
+        - time_begin: 19:55:00
+          time_end: 20:20:00
+          interval_min: 30
+          interval_max: 60
+          week:
+            - 1
+            - 2
+            - 3
     # 老唐谈育儿
     # - MS4wLjABAAAAXhJFSqRbOwRj72VtO4aFz7UEIGemZRmP9GjcoRZKgic
     #MS4wLjABAAAA_BNHk7z-Cb6siiuXuGb068BrWZP0y303EoMyXlFPhdVGozhlm836OvGEERpe9DAt
@@ -48,14 +90,8 @@ live:
     # - MS4wLjABAAAADg7lO8bfhLPMT2o98I2iKICL_NbK8MiAwJWYbgZuKSg
     # 素老虎
     # - MS4wLjABAAAAEtWjo3mpoqV43lfn1h5_np_h4NQIjmMQcjRv7c_wbIE
-    # 家师卫道
-    - MS4wLjABAAAAU2jY6EbVxGVhrBsiJZAQW9Hg6rhOceFE4kdMMaS6YUmwX5gLl5yAujY7jlmMkL8l
     # 车主明
     # - MS4wLjABAAAA-dNYW4hbo72DdGqYcwvDBho-s_zYv-KB-5TWp91RS3A
-    # 吕晓彤
-    - MS4wLjABAAAAqejZxZKopDBDEzxcQp-_1b019FfM05C0NzjQNpc5ylU
-    # 产品老曾
-    - MS4wLjABAAAA7YPC9dXg8FUn8pQyjPmNOQ5FQ8bzW0Zx4TRDLOEexISBMINkAAfLTsnTDp9l3oQb
 
 api:
   userinfo: 'https://live.douyin.com/webcast/user/?aid=6383&target_uid='

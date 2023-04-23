@@ -25,9 +25,10 @@ class VideoInfo:
     url: str = ""
     sec_uid: str = ""
     nickname: str = ""
+    user: dict = {}
 
     def __str__(self) -> str:
-        return f"主播昵称:{self.nickname} 解析度:{self.live_resolution} url:{self.url} sec_uid:{self.sec_uid}"
+        return f"主播昵称:{self.nickname} 解析度:{self.live_resolution} url:{self.url} user:{self.user}"
 
 
 class FlvDownloader:
@@ -50,7 +51,7 @@ class FlvDownloader:
 
         # TODO 暂时停止编码
         # self._encoding = _encoding_event.acquire(blocking=False)
-        logger.info(f"启动下载：{self.video.sec_uid} 编码锁锁定状态：{self._encoding}")
+        logger.info(f"启动下载：{self.video.user} 编码锁锁定状态：{self._encoding}")
 
         result = "下载未完成"
         try:
@@ -71,13 +72,13 @@ class FlvDownloader:
         logger.info(f"释放下载锁，以及清除编码锁定标记。视频下载结果: {result}")
 
         # 开启刷新（并关闭live窗口)
-        cmd = BrowserCommand(BrowserCommand.CMD_OPENUSER, self.video.sec_uid, None)
+        cmd = BrowserCommand(BrowserCommand.CMD_OPENUSER, self.video.user, None)
         BROWSER_CMD_QUEUE.put(cmd)
         # 强制刷新
-        cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self.video.sec_uid, None)
+        cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self.video.user, None)
         BROWSER_CMD_QUEUE.put(cmd)
         # 开启快速刷新
-        cmd = BrowserCommand(BrowserCommand.CMD_QUICKMONITOR, self.video.sec_uid, None)
+        cmd = BrowserCommand(BrowserCommand.CMD_QUICKMONITOR, self.video.user, None)
         BROWSER_CMD_QUEUE.put(cmd)
 
     def getOutputFileName(self):
@@ -104,6 +105,7 @@ accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
                     -referer "https://live.douyin.com/" \
                     -user_agent "{user_agent}" \
                     -headers "{header}" \
+                    -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 150 -reconnect_on_network_error 150 \
                     -i '{self.video.url}' \
                     {self._get_encoding_param()} \
                     '{self.getOutputFileName()}'"""
@@ -124,6 +126,7 @@ accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
 class HlsDownloader:
     def __init__(self, url: str):
         self._url = url
+        raise Exception("还未实现")
 
     def download(self):
         now = datetime.now().strftime("%Y-%m-%d-%H%M%S")
@@ -135,6 +138,7 @@ class HlsDownloader:
             -referer "https://live.douyin.com/" \
             -user_agent "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36" \
             -headers "{header}" \
+            -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 150 -reconnect_on_network_error 1 \
             -i '{self._url}' \
               -c:v libx264 -crf 28 -preset veryslow\
               -af aresample=resampler=soxr -ar 32000 -ac 1 -c:a libfdk_aac -profile:a aac_he -b:a 28k \

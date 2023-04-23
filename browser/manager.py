@@ -57,7 +57,7 @@ class BrowserManager():
         if type(_rooms) is not list:
             _rooms = [_rooms]
         for _user in _users:
-            self.open_user_page(str(_user))
+            self.open_user_page(_user)
         for _room in _rooms:
             # TODO: 这里的userid为空
             self.open_live_page(str(_room), None)
@@ -67,18 +67,19 @@ class BrowserManager():
     def driver(self):
         return self._driver
 
-    def open_user_page(self, sec_user_id: str):
-        if not sec_user_id:
+    def open_user_page(self, user: dict):
+        if not user:
             return
         tab = TabInfo()
         tab.tab_type = TabInfo.TAB_TYPE_USER
-        tab.user_id = sec_user_id
+        tab.user = user
+        tab.user_id = user.get('sec_uid')
         tab.need_refresh = True
-        if urlparse(sec_user_id).scheme:
-            tab.url = sec_user_id
+        if urlparse(tab.user_id).scheme:
+            tab.url = tab.user_id
         else:
             # 单独的用户id
-            tab.url = "https://www.douyin.com/user/" + sec_user_id
+            tab.url = "https://www.douyin.com/user/" + tab.user_id
         self.open_tab(tab)
         logger.debug(f"打开了用户标签页:{tab}")
         # script_txt = '''
@@ -207,13 +208,14 @@ class TabInfo(object):
 
     def __init__(self):
         self.tab_handler: str = ""
+        self.user: dict = {}  # 来自配置文件live.users
         self.user_id: str = ""
         self.url: str = ""
         self.tab_type: str = self.TAB_TYPE_OTHER
         self.need_refresh = True
 
     def __str__(self) -> str:
-        return f"TabInfo: 刷新开关：{self.need_refresh} {self.tab_type} {self.user_id} {self.url} handler:{self.tab_handler}"
+        return f"TabInfo: 刷新开关：{self.need_refresh} {self.tab_type} {self.user['name']} url:{self.url} handler:{self.tab_handler}"
 
 
 def init_manager():
@@ -228,7 +230,7 @@ def init_manager():
     if not isinstance(_users, list):
         _users = [_users]
     for x in _users:
-        _random_period_timer.add_timer(str(x))
+        _random_period_timer.add_timer(x)
 
     return _manager
 

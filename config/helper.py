@@ -29,3 +29,10 @@ def getPath(yaml_path: str, create_if_not_exist: bool = False):
         os.makedirs(dst, exist_ok=True)
     return dst
 
+
+def searchUserBySecUid(sec_uid):
+    result = getConfig("live.users")
+    for x in result:
+        if x.get('sec_uid') == sec_uid:
+            return x
+    raise Exception(f"无法找到：{sec_uid} {result}")

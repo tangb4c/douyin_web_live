@@ -16,7 +16,7 @@ class BrowserCommand(object):
     # 快速心跳检测
     CMD_QUICKMONITOR = "quick-monitor"
 
-    def __init__(self, command: str, userid: Optional[str], url: Optional[str]):
+    def __init__(self, command: str, user: dict, url: Optional[str]):
         self.command: str = command
-        self.user: str = userid
+        self.user: dict = user
         self.url: str = url

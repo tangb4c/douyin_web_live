@@ -4,6 +4,7 @@ import re
 import urllib.parse
 from typing import TYPE_CHECKING
 from browser.common import BrowserCommand
+from config.helper import searchUserBySecUid
 from proxy.common import MessagePayload
 
 if TYPE_CHECKING:
@@ -93,9 +94,9 @@ class UserInfoAddon:
             # 直播链接
             re_live = re.search(r'https://live\.douyin\.com/\d{8,20}\?[^"]+', flow.response.text)
             if re_live:
-                userid = re_c.group(1)
+                sec_uid = re_c.group(1)
                 url = re_live.group()
-                browser_cmd = BrowserCommand(BrowserCommand.CMD_REDIRECT, userid, url)
+                browser_cmd = BrowserCommand(BrowserCommand.CMD_REDIRECT, searchUserBySecUid(sec_uid), url)
                 self._cmd_queue.put(browser_cmd)
                 logger.info(f"找到直播房间，跳转命令推入队列。{browser_cmd}")
         return re_c

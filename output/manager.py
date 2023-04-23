@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import jmespath
 
 from browser.common import BrowserCommand
-from config.helper import config
+from config.helper import config, searchUserBySecUid
 from messages.chat import ChatMessage
 from messages.control import ControlMessage
 from messages.fansclub import FansclubMessage
@@ -150,7 +150,7 @@ class OutputManager():
                 logger.warning(f"没有解析出video链接，注意检查. {message.text}")
                 return
             print(f"开始下载：{video}")
-            cmd = BrowserCommand(BrowserCommand.CMD_STOPLIVE, video.sec_uid, None)
+            cmd = BrowserCommand(BrowserCommand.CMD_STOPLIVE, video.user, None)
             BROWSER_CMD_QUEUE.put(cmd)
 
             flv = FlvDownloader(video)
@@ -183,6 +183,7 @@ class OutputManager():
                     video.url = first_item[1]
                 video.sec_uid = cc['data']['user']['sec_uid']
                 video.nickname = cc['data']['user']['nickname']
+                video.user = searchUserBySecUid(video.sec_uid)
                 return video
         except:
             logger.exception(f"解析时发生异常。 {cc}")

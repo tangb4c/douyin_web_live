@@ -14,8 +14,8 @@ print(f"loggerName: {logger.name}")
 
 
 class RandomPeriodSchedule:
-    def __init__(self, userid):
-        self._userid = userid
+    def __init__(self, user):
+        self._user = user
         self._timer: Optional[Timer] = None
         self._should_exit = threading.Event()
         self._quick_monitor_count = 0  # 快速监测次数
@@ -28,11 +28,11 @@ class RandomPeriodSchedule:
 
     def enable_quick_watch_mode(self):
         self._quick_monitor_count = 10
-        logger.info(f"已开启快速检测模式, {self._userid}")
+        logger.info(f"已开启快速检测模式, {self._user}")
 
     @property
-    def userid(self):
-        return self._userid
+    def user(self):
+        return self._user
 
     def startTimer(self):
         if self._should_exit.is_set():
@@ -41,11 +41,11 @@ class RandomPeriodSchedule:
         # 仅在工作时间内刷新
         if self._timer:
             if self._is_worktime():
-                if not g_download_lock.is_locked(self._userid):
-                    cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self._userid, None)
+                if not g_download_lock.is_locked(self._user.get('sec_uid')):
+                    cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self._user, None)
                     BROWSER_CMD_QUEUE.put(cmd)
                 else:
-                    logger.info(f"{self.userid} 已被锁住，跳过")
+                    logger.info(f"{self.user['name']} 已被锁住，跳过")
             else:
                 logger.info(f"不在工作时间，跳过消息推送")
         else:
@@ -77,15 +77,15 @@ class ScheduleManager:
     def __init__(self):
         self.timers: "List[RandomPeriodSchedule]" = list()
 
-    def add_timer(self, userid):
-        t = RandomPeriodSchedule(userid)
+    def add_timer(self, user):
+        t = RandomPeriodSchedule(user)
         t.startTimer()
         self.timers.append(t)
-        logger.info(f"添加定时刷新timer, useid: {userid}")
+        logger.info(f"添加定时刷新timer, useid: {user}")
 
     def enable_quick_monitor(self, userid):
         for x in self.timers:
-            if x.userid == userid:
+            if x.user.get('sec_uid') == userid:
                 x.enable_quick_watch_mode()
 
     def terminate(self):
