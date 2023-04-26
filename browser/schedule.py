@@ -34,38 +34,92 @@ class RandomPeriodSchedule:
     def user(self):
         return self._user
 
+    @property
+    def userinfo(self):
+        return f"{self.user.get('name')}"
+
+    def _getNextRefreshInterval(self):
+        if 'monitor_plan' in self.user:
+            now_weekday = datetime.datetime.now().isoweekday()
+            time_now = datetime.datetime.now().time()
+            for plan in self.user.get('monitor_plan'):
+                if ('weekday' in plan) and not any(x for x in plan.get('weekday') if x == now_weekday):
+                    logger.info(f"当前星期{now_weekday},{self.userinfo} 不在监视计划内:{plan}")
+                    continue
+                time_begin = datetime.datetime.strptime(plan.get('time_begin'), "%H:%M:%S").time()
+                time_end = datetime.datetime.strptime(plan.get('time_end'), "%H:%M:%S").time()
+                if time_begin <= time_now <= time_end:
+                    interval_min = plan.get('interval_min')
+                    interval_max = plan.get('interval_max')
+                    interval = random.randint(interval_min, interval_max)
+                    logger.info(f"命中监视计划:{plan}, {self.userinfo} 返回间隔：{interval}")
+                    return interval
+                else:
+                    logger.info(f"未命中此监控计划:{plan}, {self.userinfo}")
+        logger.info(f"使用系统默认间隔设置, {self.userinfo}")
+        return random.randint(130, 360)
+
+    def _isWork(self):
+        if 'monitor_plan' in self.user:
+            now_weekday = datetime.datetime.now().isoweekday()
+            time_now = datetime.datetime.now().time()
+            for plan in self.user.get('monitor_plan'):
+                if ('weekday' in plan) and not any(x for x in plan.get('weekday') if x == now_weekday):
+                    logger.info(f"不允许工作。当前星期{now_weekday},{self.userinfo} 不在监视计划内:{plan}")
+                    continue
+                time_begin = datetime.datetime.strptime(plan.get('time_begin'), "%H:%M:%S").time()
+                time_end = datetime.datetime.strptime(plan.get('time_end'), "%H:%M:%S").time()
+                if time_begin <= time_now <= time_end:
+                    logger.info(f"命中监视计划，{self.userinfo} 允许工作:{plan}")
+                    return True
+        # 非工作时间
+        if not self._is_worktime():
+            logger.info(f"当前为非工作时间. {self.userinfo}")
+            return False
+
+        if 'monitor_mode' in self.user:
+            monitor_mode = self.user.get('monitor_mode')
+            if monitor_mode == 'watch':
+                logger.info(f"当前监视模式为watch，允许监视 {self.userinfo}")
+                return True
+
+        logger.info(f"无刷新设置，跳过. {self.userinfo}")
+        return False
+
     def startTimer(self):
         if self._should_exit.is_set():
             return
 
         # 仅在工作时间内刷新
         if self._timer:
-            if self._is_worktime():
+            if self._isWork():
                 if not g_download_lock.is_locked(self._user.get('sec_uid')):
                     cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self._user, None)
                     BROWSER_CMD_QUEUE.put(cmd)
                 else:
-                    logger.info(f"{self.user['name']} 已被锁住，跳过")
-            else:
-                logger.info(f"不在工作时间，跳过消息推送")
+                    logger.info(f"{self.userinfo} 已被锁住，跳过自动刷新")
         else:
             logger.info(f"timer为null")
-        # next
+
+        # 快速刷新模式
         if self._quick_monitor_count > 0:
             self._quick_monitor_count -= 1
             next_refresh_interval = random.randint(10, 25)
+            logger.info(
+                f"快速刷模式. {self.userinfo} 剩余次数：{self._quick_monitor_count} 下次间隔:{next_refresh_interval}")
         else:
-            next_refresh_interval = random.randint(130, 360)
+            next_refresh_interval = self._getNextRefreshInterval()
 
-        logger.info(f"下次刷新间隔:{next_refresh_interval}秒")
-        self._timer = Timer(next_refresh_interval, self.startTimer)
-        self._timer.start()
+        logger.info(f"下次刷新间隔:{next_refresh_interval}秒 {self.userinfo}")
+        if not self._should_exit.is_set():
+            self._timer = Timer(next_refresh_interval, self.startTimer)
+            self._timer.start()
 
     def _is_worktime(self):
         begin = datetime.time.fromisoformat("07:00:00")
         end = datetime.time.fromisoformat("21:00:00")
         now = datetime.datetime.now().time()
-        return begin <= now and now <= end
+        return begin <= now <= end
 
     def terminate(self):
         self._should_exit.set()
@@ -81,7 +135,7 @@ class ScheduleManager:
         t = RandomPeriodSchedule(user)
         t.startTimer()
         self.timers.append(t)
-        logger.info(f"添加定时刷新timer, useid: {user}")
+        logger.info(f"添加定时刷新timer, user: {user}")
 
     def enable_quick_monitor(self, userid):
         for x in self.timers:

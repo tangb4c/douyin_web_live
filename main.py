@@ -1,6 +1,7 @@
 import atexit
 import logging
 import logging.config
+import random
 import signal
 
 from browser.manager import init_manager as init_browser_manager
@@ -14,6 +15,7 @@ def _init_log():
 
 if __name__ == '__main__':
     _init_log()
+    random.seed()
     proxy_manager = init_proxy_manager()
     proxy_manager.start_loop()
     browser_manager = init_browser_manager()

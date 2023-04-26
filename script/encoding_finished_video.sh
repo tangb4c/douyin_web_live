@@ -59,7 +59,8 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
     msg "视频:$video_file\t转换为:$output_file"
     #       -ac 1 -c:a libfdk_aac -profile:a aac_he_v2 -b:a 28k \
     # 适合分享、对话场景      -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -b:a 24k
-    taskset -c 1-14 /usr/local/bin/ffmpeg \
+    taskset -c 1-15 /usr/local/bin/ffmpeg \
+      -nostats \
       -hide_banner \
       -y \
       -fflags +genpts \
@@ -69,10 +70,12 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -b:a 24k \
       "$output_file"
     if [ $? -eq 0 ]; then
-      msg "ffmpeg 编码成功，删除原始文件"
+      msg "ffmpeg 编码成功，移动原始文件"
       output_recycle_dir="$recycle_dir/$video_path"
       mkdir -p "$output_recycle_dir"
       mv -fv "$video_file" "$output_recycle_dir"
+      # 处理成功1个文件即退出
+      break
     else
       err "ffmpeg 编码失败.encoding failed"
     fi

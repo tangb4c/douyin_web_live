@@ -91,11 +91,12 @@ class BrowserManager():
         # self.driver.execute_script(script_txt, tab.tab_handler)
         # logger.error("Enter execute_script")
 
-    def open_live_page(self, live_url: str, userid):
+    def open_live_page(self, live_url: str, user):
         if not live_url:
             return
         tab = TabInfo()
-        tab.user_id = userid
+        tab.user = user
+        tab.user_id = user.get('sec_uid')
         tab.tab_type = TabInfo.TAB_TYPE_LIVE
         tab.need_refresh = True
         if not urlparse(live_url).scheme:
@@ -161,7 +162,7 @@ class BrowserManager():
             BROWSER_CMD_QUEUE.put(None)
 
     def _handle_redirect(self, message):
-        tabinfo = next((x for x in self._tabs if x.user_id == message.user), None)
+        tabinfo = next((x for x in self._tabs if x.user_id == message.user.get('sec_uid')), None)
         if tabinfo:
             # self.driver.close(tabinfo.tab_handler)
             # self._tabs.remove(tabinfo)
@@ -172,7 +173,7 @@ class BrowserManager():
         # 刷新
         for x in self._tabs:
             # logger.debug(f"tab对象信息 {x}")
-            if x.need_refresh and (x.user_id == None or x.user_id == message.user):
+            if x.need_refresh and (x.user_id == None or x.user_id == message.user.get('sec_uid')):
                 # self.driver.open_url(x.url, x.tab_handler)
                 self.driver.refresh(x.tab_handler)
                 logger.debug(f"刷新完成：{x}")
@@ -181,9 +182,9 @@ class BrowserManager():
 
     def _handle_openuser(self, message):
         for x in self._tabs[:]:
-            if x.tab_type == TabInfo.TAB_TYPE_USER and x.user_id == message.user:
+            if x.tab_type == TabInfo.TAB_TYPE_USER and x.user_id == message.user.get('sec_uid'):
                 x.need_refresh = True
-            if x.tab_type == TabInfo.TAB_TYPE_LIVE and x.user_id == message.user:
+            if x.tab_type == TabInfo.TAB_TYPE_LIVE and x.user_id == message.user.get('sec_uid'):
                 # 顺便把live全给关了，这里逻辑写得比较烂，将就着用吧
                 try:
                     self.driver.close(x.tab_handler)
@@ -194,7 +195,7 @@ class BrowserManager():
 
     def _handle_stoplive_refresh(self, message):
         for x in self._tabs:
-            if x.tab_type == TabInfo.TAB_TYPE_LIVE and x.user_id == message.user:
+            if x.tab_type == TabInfo.TAB_TYPE_LIVE and x.user_id == message.user.get('sec_uid'):
                 x.need_refresh = False
 
     def _handle_quick_monitor(self, message):

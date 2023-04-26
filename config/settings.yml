@@ -59,13 +59,13 @@ live:
           time_end: 22:00:00
           interval_min: 30
           interval_max: 60
-          week:
+          weekday:
             - 1
         - time_begin: 19:57:00
           time_end: 20:20:00
           interval_min: 30
           interval_max: 60
-          week:
+          weekday:
             - 4
     - name: 产品老曾
       sec_uid: MS4wLjABAAAA7YPC9dXg8FUn8pQyjPmNOQ5FQ8bzW0Zx4TRDLOEexISBMINkAAfLTsnTDp9l3oQb
@@ -75,10 +75,19 @@ live:
           time_end: 20:20:00
           interval_min: 30
           interval_max: 60
-          week:
+          weekday:
             - 1
             - 2
             - 3
+#    - name: 七喜1277
+#      sec_uid: MS4wLjABAAAAaevSmBXzeY0roXMpFoNzk65aNR9dQgMge5xmQcmMkQoVVDQUSVy5ih4s2pdbIySD
+#      monitor_plan:
+#        - time_begin: 21:10:00
+#          time_end: 22:20:00
+#          interval_min: 30
+#          interval_max: 60
+#          weekday:
+#            - 7
     # 老唐谈育儿
     # - MS4wLjABAAAAXhJFSqRbOwRj72VtO4aFz7UEIGemZRmP9GjcoRZKgic
     #MS4wLjABAAAA_BNHk7z-Cb6siiuXuGb068BrWZP0y303EoMyXlFPhdVGozhlm836OvGEERpe9DAt

@@ -105,7 +105,7 @@ accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
                     -referer "https://live.douyin.com/" \
                     -user_agent "{user_agent}" \
                     -headers "{header}" \
-                    -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 150 -reconnect_on_network_error 150 \
+                    -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 150 -reconnect_on_network_error 1 \
                     -i '{self.video.url}' \
                     {self._get_encoding_param()} \
                     '{self.getOutputFileName()}'"""
