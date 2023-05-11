@@ -7,6 +7,7 @@ import subprocess
 import threading
 from datetime import datetime
 
+import util.bark
 from browser.common import BrowserCommand
 from config.helper import getPath, getConfig
 from config.share import g_download_lock
@@ -14,8 +15,6 @@ from proxy.queues import BROWSER_CMD_QUEUE
 
 logger = logging.getLogger(__name__)
 print(f"loggerName: {logger.name}")
-
-
 
 _encoding_event = threading.Lock()
 
@@ -52,6 +51,7 @@ class FlvDownloader:
         # TODO 暂时停止编码
         # self._encoding = _encoding_event.acquire(blocking=False)
         logger.info(f"启动下载：{self.video.user} 编码锁锁定状态：{self._encoding}")
+        util.bark.send_message("启动录制", f"{self.video.nickname} {datetime.now()}")
 
         result = "下载未完成"
         try:
@@ -59,8 +59,9 @@ class FlvDownloader:
             logger.info(cmd)
             args = shlex.split(cmd)
             result = subprocess.run(args)
-        except:
+        except Exception as e:
             logger.exception("编码发生异常")
+            util.bark.send_message("录制中发生了异常", f"{self.video.nickname} {e}")
 
         g_download_lock.release(self.video.sec_uid)
 
@@ -70,6 +71,7 @@ class FlvDownloader:
             logger.info(f"清除编码锁定标记")
 
         logger.info(f"释放下载锁，以及清除编码锁定标记。视频下载结果: {result}")
+        util.bark.send_message("停止录制", f"{self.video.nickname} {datetime.now()}")
 
         # 开启刷新（并关闭live窗口)
         cmd = BrowserCommand(BrowserCommand.CMD_OPENUSER, self.video.user, None)
@@ -101,7 +103,7 @@ accept-encoding: gzip, deflate, br
 accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
 
 """
-        return f"""ffmpeg -y -hide_banner -loglevel warning -icy 0 \
+        return f"""ffmpeg -y -hide_banner -nostats -icy 0 \
                     -referer "https://live.douyin.com/" \
                     -user_agent "{user_agent}" \
                     -headers "{header}" \

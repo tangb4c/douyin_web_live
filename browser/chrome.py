@@ -122,3 +122,6 @@ class ChromeDriver(IDriver):
     def execute_script(self, script: str, tab_handler: str = "") -> None:
         with self.op_tab(tab_handler):
             self.browser.execute_script(script)
+
+    def handles(self):
+        return self.browser.window_handles

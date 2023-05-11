@@ -16,8 +16,8 @@ if pgrep ffmpeg >/dev/null;then
   msg '已有ffmpeg正在运行，本次运行中止'
   exit 1
 fi
-# 8分钟后再次检查
-sleep 480
+# 30秒后再次检查
+sleep 30
 if pgrep ffmpeg >/dev/null;then
   msg '再次检测：已有ffmpeg正在运行，本次运行中止'
   exit 1

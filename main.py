@@ -3,6 +3,7 @@ import logging
 import logging.config
 import random
 import signal
+import sys
 
 from browser.manager import init_manager as init_browser_manager
 from config.helper import config
@@ -23,7 +24,8 @@ if __name__ == '__main__':
 
 
     def terminate(*_):
-        print("terminate")
+        print("terminate 收到终止信号", file=sys.stderr, flush=True)
+        logging.error(f"terminate is called!")
         browser_manager.terminate()
         output_manager.terminate()
         proxy_manager.terminate()

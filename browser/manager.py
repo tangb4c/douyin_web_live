@@ -1,9 +1,13 @@
+import datetime
 import logging
 import signal
+import sys
 import threading
+import time
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
+import util.bark
 from browser.chrome import ChromeDriver
 from browser.common import BrowserCommand
 from browser.edge import EdgeDriver
@@ -13,7 +17,7 @@ from proxy.queues import BROWSER_CMD_QUEUE
 
 if TYPE_CHECKING:
     from typing import Type, Optional, List
-    from browser.IDriver import IDriver
+    from browser.IDriver import IDriver, TabNotExistsException
 
 _manager: "Optional[BrowserManager]" = None
 _random_period_timer: ScheduleManager = ScheduleManager()
@@ -21,6 +25,21 @@ _random_period_timer: ScheduleManager = ScheduleManager()
 logger = logging.getLogger(__name__)
 print(f"loggerName: {logger.name}")
 
+class TabInfo(object):
+    TAB_TYPE_OTHER = "other"
+    TAB_TYPE_USER = "user"
+    TAB_TYPE_LIVE = "live"
+
+    def __init__(self):
+        self.tab_handler: str = ""
+        self.user: dict = {}  # 来自配置文件live.users
+        self.user_id: str = ""
+        self.url: str = ""
+        self.tab_type: str = self.TAB_TYPE_OTHER
+        self.need_refresh = True
+
+    def __str__(self) -> str:
+        return f"TabInfo: 刷新开关：{self.need_refresh} {self.tab_type} {self.user['name']} url:{self.url} handler:{self.tab_handler}"
 
 class BrowserManager():
     _mapping: "dict[str, Type[IDriver]]" = {
@@ -36,6 +55,7 @@ class BrowserManager():
         self._tabs: "List[TabInfo]" = []
         self._thread: "Optional[threading.Thread]" = None
         self._should_exit = threading.Event()
+        self._last_captcha_time = 0
 
     def fake_init_browser(self):
         print("fake_init_browser")
@@ -126,7 +146,6 @@ class BrowserManager():
 
     def _handle(self):
         logger.debug('开始处理消息队列')
-
         try:
             while True:
                 message = BROWSER_CMD_QUEUE.get()
@@ -146,10 +165,12 @@ class BrowserManager():
                     self._handle_stoplive_refresh(message)
                 elif message.command == BrowserCommand.CMD_QUICKMONITOR:
                     self._handle_quick_monitor(message)
+        except TabNotExistsException as e:
+            logger.exception(f"TAB未找到异常")
         except:
-            logger.exception(f"发生异常, 发送退出信号")
-            signal.raise_signal(signal.SIGTERM)
-            logger.info(f"已发送退出信号")
+            logger.exception(f"发生异常, 发送退出信号, 直接退出")
+            # signal.raise_signal(signal.SIGTERM)
+            sys.exit()
         finally:
             if self._driver:
                 self._driver.terminate()
@@ -171,12 +192,17 @@ class BrowserManager():
 
     def _handle_refresh(self, message):
         # 刷新
-        for x in self._tabs:
+        for x in self._tabs[:]:
             # logger.debug(f"tab对象信息 {x}")
             if x.need_refresh and (x.user_id == None or x.user_id == message.user.get('sec_uid')):
-                # self.driver.open_url(x.url, x.tab_handler)
-                self.driver.refresh(x.tab_handler)
-                logger.debug(f"刷新完成：{x}")
+                if x.tab_handler not in self.driver.handles():
+                    logger.error(f"该handle{x}没有在chrome中找到:{self.driver.handles()} message:{message}")
+                    self._tabs.remove(x)
+                else:
+                    self._check_captcha(x)
+                    # self.driver.open_url(x.url, x.tab_handler)
+                    logger.debug(f"准备刷新：{x}")
+                    self.driver.refresh(x.tab_handler)
             # else:
             #    logger.debug(f"没有刷新. {x.need_refresh} {x}")
 
@@ -201,22 +227,17 @@ class BrowserManager():
     def _handle_quick_monitor(self, message):
         _random_period_timer.enable_quick_monitor(message.user)
 
+    def _check_captcha(self, tab:TabInfo):
+        # 判断是否要输入验证码
+        with self.driver.op_tab(tab.tab_handler):
+            title = self.driver.browser.title
+            logger.debug(f"浏览器title:{title} {tab.user.get('name')}")
+            if '验证码' in title and time.time() - self._last_captcha_time > 3600:
+                util.bark.send_message("需要输入验证码", f"用户:{tab.user.get('name')} 窗口：{title}")
+                self._last_captcha_time = time.time()
+                logger.info(f"发现验证码窗口:{title} {tab} 并发送了通知")
 
-class TabInfo(object):
-    TAB_TYPE_OTHER = "other"
-    TAB_TYPE_USER = "user"
-    TAB_TYPE_LIVE = "live"
 
-    def __init__(self):
-        self.tab_handler: str = ""
-        self.user: dict = {}  # 来自配置文件live.users
-        self.user_id: str = ""
-        self.url: str = ""
-        self.tab_type: str = self.TAB_TYPE_OTHER
-        self.need_refresh = True
-
-    def __str__(self) -> str:
-        return f"TabInfo: 刷新开关：{self.need_refresh} {self.tab_type} {self.user['name']} url:{self.url} handler:{self.tab_handler}"
 
 
 def init_manager():
