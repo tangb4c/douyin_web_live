@@ -33,14 +33,20 @@ live:
   rooms:
     - ""
   users:
-    # - "MS4wLjABAAAAqqJWUXfl14OZztg_Ixn9g2vtI4RsKZzTagl6bOjyL20"
-    # - "MS4wLjABAAAA89SmSpUVzt1MNDUdKJnRj4V_SpQYT9A7vfn6xOPuhI6ReW6yXpQYpXiL02l5kLaU"
     - name: 平老师深层动力育儿学
       sec_uid: MS4wLjABAAAAASwv6hRZg6nhloy9k5GVsqd--Sh4E1whTh6fc8E7X2M
       monitor_mode: watch   # 当不在monitor范围内，继续检测
       monitor_plan:
-        - time_begin: 12:56:00
+        - time_begin: 12:55:00
           time_end: 13:20:00
+          interval_min: 15
+          interval_max: 30
+        - time_begin: 8:25:00
+          time_end: 8:50:00
+          interval_min: 15
+          interval_max: 30
+        - time_begin: 18:55:00
+          time_end: 19:10:00
           interval_min: 15
           interval_max: 30
     - name: 家师卫道

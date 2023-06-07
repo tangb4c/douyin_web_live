@@ -44,7 +44,7 @@ class RandomPeriodSchedule:
             time_now = datetime.datetime.now().time()
             for plan in self.user.get('monitor_plan'):
                 if ('weekday' in plan) and not any(x for x in plan.get('weekday') if x == now_weekday):
-                    logger.info(f"当前星期{now_weekday},{self.userinfo} 不在监视计划内:{plan}")
+                    logger.info(f"【获取下次刷新间隔】跳过当前计划。当前星期{now_weekday},{self.userinfo} 不在监视计划内:{plan}")
                     continue
                 time_begin = datetime.datetime.strptime(plan.get('time_begin'), "%H:%M:%S").time()
                 time_end = datetime.datetime.strptime(plan.get('time_end'), "%H:%M:%S").time()
@@ -52,11 +52,11 @@ class RandomPeriodSchedule:
                     interval_min = plan.get('interval_min')
                     interval_max = plan.get('interval_max')
                     interval = random.randint(interval_min, interval_max)
-                    logger.info(f"命中监视计划:{plan}, {self.userinfo} 返回间隔：{interval}")
+                    logger.info(f"【获取下次刷新间隔】命中监视计划:{plan}, {self.userinfo} 采用间隔：{interval}")
                     return interval
-                else:
-                    logger.info(f"未命中此监控计划:{plan}, {self.userinfo}")
-        logger.info(f"使用系统默认间隔设置, {self.userinfo}")
+                # else:
+                #     logger.info(f"未命中此监控计划:{plan}, {self.userinfo}")
+        logger.info(f"【获取下次刷新间隔】未找到自定义计划，采用系统默认间隔设置, {self.userinfo}")
         return random.randint(130, 360)
 
     def _isWork(self):
@@ -65,7 +65,7 @@ class RandomPeriodSchedule:
             time_now = datetime.datetime.now().time()
             for plan in self.user.get('monitor_plan'):
                 if ('weekday' in plan) and not any(x for x in plan.get('weekday') if x == now_weekday):
-                    logger.info(f"不允许工作。当前星期{now_weekday},{self.userinfo} 不在监视计划内:{plan}")
+                    logger.info(f"跳过当前计划。当前星期{now_weekday},{self.userinfo} 不在计划内:{plan}")
                     continue
                 time_begin = datetime.datetime.strptime(plan.get('time_begin'), "%H:%M:%S").time()
                 time_end = datetime.datetime.strptime(plan.get('time_end'), "%H:%M:%S").time()
@@ -83,7 +83,7 @@ class RandomPeriodSchedule:
                 logger.info(f"当前监视模式为watch，允许监视 {self.userinfo}")
                 return True
 
-        logger.info(f"无刷新设置，跳过. {self.userinfo}")
+        logger.info(f"暂停刷新，跳过: {self.userinfo}")
         return False
 
     def startTimer(self):
