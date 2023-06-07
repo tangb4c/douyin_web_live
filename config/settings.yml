@@ -41,8 +41,8 @@ live:
           time_end: 13:20:00
           interval_min: 15
           interval_max: 30
-        - time_begin: 8:25:00
-          time_end: 8:50:00
+        - time_begin: 7:58:00
+          time_end: 8:40:00
           interval_min: 15
           interval_max: 30
         - time_begin: 18:55:00
