@@ -9,7 +9,7 @@ webdriver:
     bin: msedgedriver.exe
   chrome:
     bin: ~/setup/chrome/chromedriver/chromedriver
-    no_sandbox: True
+    no_sandbox: False
     user_data_dir: ~/output/douyin_web_live/douyin_selenium
 
 output:
@@ -57,34 +57,37 @@ live:
           time_end: 07:30:00
           interval_min: 30
           interval_max: 60
-    - name: 吕晓彤
-      sec_uid: MS4wLjABAAAAqejZxZKopDBDEzxcQp-_1b019FfM05C0NzjQNpc5ylU
-      monitor_mode: stop
-      monitor_plan:
-        - time_begin: 21:25:00
-          time_end: 22:00:00
-          interval_min: 30
-          interval_max: 60
-          weekday:
-            - 1
-        - time_begin: 19:57:00
-          time_end: 20:20:00
-          interval_min: 30
-          interval_max: 60
-          weekday:
-            - 4
-    - name: 产品老曾
-      sec_uid: MS4wLjABAAAA7YPC9dXg8FUn8pQyjPmNOQ5FQ8bzW0Zx4TRDLOEexISBMINkAAfLTsnTDp9l3oQb
-      monitor_mode: stop
-      monitor_plan:
-        - time_begin: 19:55:00
-          time_end: 20:20:00
-          interval_min: 30
-          interval_max: 60
-          weekday:
-            - 1
-            - 2
-            - 3
+#    - name: 吕晓彤
+#      sec_uid: MS4wLjABAAAAqejZxZKopDBDEzxcQp-_1b019FfM05C0NzjQNpc5ylU
+#      monitor_mode: stop
+#      monitor_plan:
+#        - time_begin: 21:25:00
+#          time_end: 22:00:00
+#          interval_min: 30
+#          interval_max: 60
+#          weekday:
+#            - 1
+#        - time_begin: 19:57:00
+#          time_end: 20:20:00
+#          interval_min: 30
+#          interval_max: 60
+#          weekday:
+#            - 4
+#    - name: 产品老曾
+#      sec_uid: MS4wLjABAAAA7YPC9dXg8FUn8pQyjPmNOQ5FQ8bzW0Zx4TRDLOEexISBMINkAAfLTsnTDp9l3oQb
+#      monitor_mode: stop
+#      monitor_plan:
+#        - time_begin: 19:55:00
+#          time_end: 20:20:00
+#          interval_min: 30
+#          interval_max: 60
+#          weekday:
+#            - 1
+#            - 2
+#            - 3
+#    - name: 钓鱼
+#      sec_uid: MS4wLjABAAAAH-N76KNSAFBzxmJd7udONjM4r_Jjt7vmDkkvh8vu6Bs
+#      monitor_mode: watch
 #    - name: 七喜1277
 #      sec_uid: MS4wLjABAAAAaevSmBXzeY0roXMpFoNzk65aNR9dQgMge5xmQcmMkQoVVDQUSVy5ih4s2pdbIySD
 #      monitor_plan:

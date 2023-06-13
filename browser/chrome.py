@@ -14,17 +14,29 @@ class ChromeDriver(IDriver):
     def __init__(self):
         super(ChromeDriver, self).__init__()
         options = Options()
+        # chrome开关帮助
+        # https://peter.sh/experiments/chromium-command-line-switches/
         if platform.system() == 'Linux':
             options.add_argument("--headless")
             options.add_argument("--disable-gpu")
+            # ssh -N -L 59314:localhost:59314 cdev
+            # chrome://inspect, 配置中加入 localhost:59314
             options.add_argument("--remote-debugging-port=59314")
-            options.add_argument("--remote-debugging-address=0.0.0.0")
+            # 去掉全局监听
+            # options.add_argument("--remote-debugging-address=0.0.0.0")
             # 禁止图片和css加载
             # prefs = {"profile.managed_default_content_settings.images": 2, 'permissions.default.stylesheet': 2}
             # options.add_experimental_option("prefs", prefs)
             # options.add_argument('blink-settings=imagesEnabled=false')
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
+
+            # https://iwiki.woa.com/pages/viewpage.action?pageId=1674340994
+            # 公司网络安全要求开启沙箱。该选项开启，要求chrome在linux中运行在普通用户下，否则会报错（不过我关闭该选项后，似乎不会报错）
+            # Chrome Headless doesn't launch on Debian · Issue #290 · puppeteer/puppeteer
+            # https://github.com/puppeteer/puppeteer/issues/290
+            # options.add_argument("--no-sandbox")
+
+            # 这个选项一般是shm内存较少，发生crash时，可以开启这个
+            # options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--disable-browser-side-navigation")
             options.add_argument("disable-infobars")
             # 不用等待，因为我们没用到dom
