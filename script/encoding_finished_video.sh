@@ -67,7 +67,7 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       -i "$video_file" \
       -metadata title="$title" \
       -c:v libx264 -crf 28 -preset veryslow \
-      -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -b:a 24k \
+      -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -profile:a aac_he -b:a 24k \
       "$output_file"
     if [ $? -eq 0 ]; then
       msg "ffmpeg 编码成功，移动原始文件"
