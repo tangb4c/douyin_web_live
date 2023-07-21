@@ -12,13 +12,13 @@ err() {
   echo -e "\e[31m$(date '+%F %T') $*\e[0m"
 }
 
-if pgrep ffmpeg >/dev/null;then
+if pgrep ffmpeg >/dev/null; then
   msg '已有ffmpeg正在运行，本次运行中止'
   exit 1
 fi
 # 30秒后再次检查
 sleep 30
-if pgrep ffmpeg >/dev/null;then
+if pgrep ffmpeg >/dev/null; then
   msg '再次检测：已有ffmpeg正在运行，本次运行中止'
   exit 1
 fi
@@ -27,7 +27,6 @@ fi
 # https://cloud.tencent.com/developer/article/1634267
 # 单实例运行
 [ "${FLOCKER}" != "$0" ] && exec env FLOCKER="$0" flock -en "$0" "$0" "$@"
-
 
 msg "开始运行"
 
@@ -44,12 +43,14 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
     msg "$(lsof '$video_file')"
     continue
   fi
-  msg "准备处理视频:$video_file"
 
+  # 视频处理部分
+  msg "准备处理视频:$video_file"
   video_path=$(dirname "$video_file")
   output_dir="$dst_dir/$video_path"
-  msg "目标目录:$output_dir"
-  mkdir -p "$output_dir"
+  audio_output_dir="$output_dir/audio"
+  msg "目标目录:$output_dir 音频目录:$audio_output_dir"
+  mkdir -p "$audio_output_dir"
 
   if [[ $video_file =~ .h264.mp4$ ]]; then
     mv -fv "$video_file" "$output_dir"
@@ -60,6 +61,7 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
     #       -ac 1 -c:a libfdk_aac -profile:a aac_he_v2 -b:a 28k \
     # 适合分享、对话场景      -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -b:a 24k
     taskset -c 1-15 /usr/local/bin/ffmpeg \
+      -nostdin \
       -nostats \
       -hide_banner \
       -y \
@@ -69,6 +71,24 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       -c:v libx264 -crf 28 -preset veryslow \
       -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -profile:a aac_he -b:a 24k \
       "$output_file"
+
+    if [ $? -eq 0 ]; then
+      err "ffmpeg视频编码失败"
+    fi
+
+    audio_output_file="$audio_output_dir/${title%%.*}.aac.m4a"
+    msg "从视频:$video_file\t提取音频:$audio_output_file"
+    /usr/local/bin/ffmpeg \
+      -nostdin \
+      -nostats \
+      -hide_banner \
+      -y \
+      -i "$video_file" \
+      -metadata title="$title" \
+      -vn \
+      -c:a libfdk_aac -profile:a aac_he -b:a 64k \
+      "$audio_output_file"
+
     if [ $? -eq 0 ]; then
       msg "ffmpeg 编码成功，移动原始文件"
       output_recycle_dir="$recycle_dir/$video_path"
@@ -80,4 +100,6 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       err "ffmpeg 编码失败.encoding failed"
     fi
   fi
+
+  # 音频处理部分
 done
