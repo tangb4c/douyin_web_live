@@ -16,8 +16,8 @@ if pgrep ffmpeg >/dev/null; then
   msg '已有ffmpeg正在运行，本次运行中止'
   exit 1
 fi
-# 30秒后再次检查
-sleep 30
+# 5秒后再次检查（避免两个ffmpeg执行间隔，出现并行冲突）
+sleep 5
 if pgrep ffmpeg >/dev/null; then
   msg '再次检测：已有ffmpeg正在运行，本次运行中止'
   exit 1
@@ -33,9 +33,10 @@ msg "开始运行"
 live_dir=$HOME/output/douyin_web_live/live
 dst_dir=$HOME/output/douyin_web_live/encoded
 recycle_dir=$HOME/output/douyin_web_live/recycle
+badfile_dir=$HOME/output/douyin_web_live/badfile
 
 cd "$live_dir" || (echo "$live_dir 不存在" && exit 1)
-find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
+find . -type f \( -name "*.flv" -o -name "*.mp4" -o -name "*.ts" \) -printf '%P\n' | while IFS= read -r video_file; do
   # 当lsof无任何输出时，会返回非零错误码
   used_count=$(lsof "$video_file" 2>/dev/null | wc -l)
   if [ $used_count -ne 0 ]; then
@@ -43,6 +44,11 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
     msg "$(lsof '$video_file')"
     continue
   fi
+
+#  if [[ ! ( "$video_file" =~ "小夕颜" ) ]];then
+#    msg "调试模式中，跳过$video_file"
+#    continue
+#  fi
 
   # 视频处理部分
   msg "准备处理视频:$video_file"
@@ -72,8 +78,12 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       -af "highpass=f=200, lowpass=f=3000" -ac 1 -ar 32000 -c:a libfdk_aac -profile:a aac_he -b:a 24k \
       "$output_file"
 
-    if [ $? -eq 0 ]; then
-      err "ffmpeg视频编码失败"
+    ret_code=$?
+    if [ $ret_code -ne 0 ]; then
+      err "ffmpeg视频编码失败. ret:$ret_code"
+      mkdir -p "$badfile_dir"
+      mv -fv "$video_file" "$badfile_dir"
+      continue
     fi
 
     audio_output_file="$audio_output_dir/${title%%.*}.aac.m4a"
@@ -89,7 +99,8 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       -c:a libfdk_aac -profile:a aac_he -b:a 64k \
       "$audio_output_file"
 
-    if [ $? -eq 0 ]; then
+    ret_code=$?
+    if [ $ret_code -eq 0 ]; then
       msg "ffmpeg 编码成功，移动原始文件"
       output_recycle_dir="$recycle_dir/$video_path"
       mkdir -p "$output_recycle_dir"
@@ -97,7 +108,10 @@ find . -type f -name "*.mp4" -printf '%P\n' | while IFS= read -r video_file; do
       # 处理成功1个文件即退出
       break
     else
-      err "ffmpeg 编码失败.encoding failed"
+      err "ffmpeg 音频编码失败. ret:$ret_code"
+      mkdir -p "$badfile_dir"
+      mv -fv "$video_file" "$badfile_dir"
+      continue
     fi
   fi
 

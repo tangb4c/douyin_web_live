@@ -49,6 +49,9 @@ live:
           time_end: 19:10:00
           interval_min: 15
           interval_max: 30
+#    - name: 小夕颜
+#      sec_uid: MS4wLjABAAAAjVFMSqAopKEuPjlZeQUMGV2mQzRdm3QOa9xfJEBWUnmIrSj-45Dxny1jtRXqP90X
+#      monitor_mode: watch
     - name: 家师卫道
       sec_uid: MS4wLjABAAAAU2jY6EbVxGVhrBsiJZAQW9Hg6rhOceFE4kdMMaS6YUmwX5gLl5yAujY7jlmMkL8l
       monitor_mode: stop

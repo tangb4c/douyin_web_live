@@ -84,12 +84,14 @@ class FlvDownloader:
         BROWSER_CMD_QUEUE.put(cmd)
 
     def getOutputFileName(self):
-        nickname = re.sub(r'[/<>:\"\\?*]+', '-', self.video.nickname)
+        # 取请求返回的昵称，这个主播经常改，而且包含特殊字符，不建议使用
+        # nickname = re.sub(r'[/<>:\"\\?*]+', '-', self.video.nickname)
+        nickname = self.video.user['name']
         dst_path = os.path.join(self.output_path, nickname)
         os.makedirs(dst_path, exist_ok=True)
 
         encoding_state = 'h264' if self._encoding else 'origin'
-        filename = datetime.now().strftime(f"{nickname}_%Y-%m-%dT%H%M%S.{encoding_state}.mp4")
+        filename = datetime.now().strftime(f"{nickname}_%Y-%m-%dT%H%M%S.{encoding_state}.flv")
         return os.path.join(self.output_path, nickname, filename)
 
     def _get_ffmpeg_cmd(self):
@@ -103,6 +105,7 @@ accept-encoding: gzip, deflate, br
 accept-language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
 
 """
+        # 加上 -t 30 ，只录制30秒
         return f"""ffmpeg -y -hide_banner -nostats -icy 0 \
                     -referer "https://live.douyin.com/" \
                     -user_agent "{user_agent}" \
