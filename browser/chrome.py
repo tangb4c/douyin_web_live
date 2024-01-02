@@ -36,7 +36,7 @@ class ChromeDriver(IDriver):
             # options.add_argument("--no-sandbox")
 
             # 这个选项一般是shm内存较少，发生crash时，可以开启这个
-            # options.add_argument("--disable-dev-shm-usage")
+            options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--disable-browser-side-navigation")
             options.add_argument("disable-infobars")
             # 不用等待，因为我们没用到dom
