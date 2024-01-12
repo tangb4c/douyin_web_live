@@ -39,16 +39,16 @@ live:
       monitor_plan:
         - time_begin: 12:55:00
           time_end: 13:20:00
-          interval_min: 15
-          interval_max: 30
+          interval_min: 60
+          interval_max: 120
         - time_begin: 7:58:00
           time_end: 8:40:00
-          interval_min: 15
-          interval_max: 30
+          interval_min: 60
+          interval_max: 120
         - time_begin: 18:55:00
           time_end: 19:10:00
-          interval_min: 15
-          interval_max: 30
+          interval_min: 60
+          interval_max: 120
 #    - name: 小夕颜
 #      sec_uid: MS4wLjABAAAAjVFMSqAopKEuPjlZeQUMGV2mQzRdm3QOa9xfJEBWUnmIrSj-45Dxny1jtRXqP90X
 #      monitor_mode: watch
@@ -58,8 +58,8 @@ live:
       monitor_plan:
         - time_begin: 06:58:00
           time_end: 07:30:00
-          interval_min: 30
-          interval_max: 60
+          interval_min: 60
+          interval_max: 240
 #    - name: 吕晓彤
 #      sec_uid: MS4wLjABAAAAqejZxZKopDBDEzxcQp-_1b019FfM05C0NzjQNpc5ylU
 #      monitor_mode: stop

@@ -1,12 +1,9 @@
 #!/bin/sh
-
-echo "pkill"
-#pkill -f douyin-live-service
-echo "killall"
+echo "kill process in script"
+pkill -f 'pipenv run python main.py douyin-live-service'
 killall chromedriver chrome
-sleep 2
 killall -9 chromedriver chrome
 sleep 1
-# ps aux|grep douyin-live-service
+echo "finished kill process in script, start it"
 # 工作目录设置为/data/deploy/douyin_web_live
 /bin/scl enable rh-python38 '/home/blaketang/.local/bin/pipenv run python main.py douyin-live-service'

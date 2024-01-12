@@ -23,7 +23,7 @@ class ChromeDriver(IDriver):
             # chrome://inspect, 配置中加入 localhost:59314
             options.add_argument("--remote-debugging-port=59314")
             # 去掉全局监听
-            # options.add_argument("--remote-debugging-address=0.0.0.0")
+            options.add_argument("--remote-debugging-address=0.0.0.0")
             # 禁止图片和css加载
             # prefs = {"profile.managed_default_content_settings.images": 2, 'permissions.default.stylesheet': 2}
             # options.add_experimental_option("prefs", prefs)
@@ -39,6 +39,10 @@ class ChromeDriver(IDriver):
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--disable-browser-side-navigation")
             options.add_argument("disable-infobars")
+            # normal：等待整个页面的加载，Selenium WebDriver保持等待，直到返回load事件。默认情况下，如果未设置页面加载策略，则设置 normal为初始策略。
+            # eager：Selenium WebDriver保持等待，直到完全加载并解析了HTML文档，该策略无关样式表、图片和subframes的加载。设置为 eager时，Selenium WebDriver保持等待， 直至返回DOMContentLoaded事件。
+            # none：Selenium WebDriver仅等待至初始页面下载完成。
+            # 默认情况下，当Selenium WebDriver加载页面时,遵循normal的页面加载策略。始终建议您在页面加载缓慢时，停止下载其他资源 (例如图片、css、 js) 。
             # 不用等待，因为我们没用到dom
             options.page_load_strategy = 'none'
             #
@@ -99,6 +103,9 @@ class ChromeDriver(IDriver):
     def new_tab(self) -> str:
         current_window_handles = self.browser.window_handles
         self.browser.execute_script("window.open('', '_blank')")
+        # 避免被检测出
+        # https://www.zenrows.com/blog/selenium-avoid-bot-detection#disable-automation-indicator-webdriver-flags
+        self.browser.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         new_window_handles = self.browser.window_handles
         for _handle in new_window_handles:
             if _handle not in current_window_handles:
