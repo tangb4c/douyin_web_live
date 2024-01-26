@@ -8,7 +8,7 @@ webdriver:
   edge:
     bin: msedgedriver.exe
   chrome:
-    bin: /bin/chromedriver
+    bin: ~/setup/chrome/chrome-stable-121/chromedriver-linux64/chromedriver
     no_sandbox: False
     user_data_dir: ~/output/douyin_web_live/douyin_selenium
 

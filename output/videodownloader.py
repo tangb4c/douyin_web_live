@@ -80,8 +80,8 @@ class FlvDownloader:
         cmd = BrowserCommand(BrowserCommand.CMD_REFRESH, self.video.user, None)
         BROWSER_CMD_QUEUE.put(cmd)
         # 开启快速刷新
-        cmd = BrowserCommand(BrowserCommand.CMD_QUICKMONITOR, self.video.user, None)
-        BROWSER_CMD_QUEUE.put(cmd)
+        # cmd = BrowserCommand(BrowserCommand.CMD_QUICKMONITOR, self.video.user, None)
+        # BROWSER_CMD_QUEUE.put(cmd)
 
     def getOutputFileName(self):
         # 取请求返回的昵称，这个主播经常改，而且包含特殊字符，不建议使用
@@ -98,7 +98,7 @@ class FlvDownloader:
         user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.5563.64 Safari/537.36'
         if platform.system() == 'Darwin':
             logger.info("MacOS模式")
-            user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
+            user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
         header = """accept: */*
 accept-encoding: gzip, deflate, br

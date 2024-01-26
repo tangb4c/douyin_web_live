@@ -14,6 +14,9 @@ class ChromeDriver(IDriver):
     def __init__(self):
         super(ChromeDriver, self).__init__()
         options = Options()
+        options.binary_location = os.path.expanduser("~/setup/chrome/chrome-mac-x64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing")
+        options.binary_location = os.path.expanduser("~//setup/chrome/chrome/chrome-headless-shell")
+        chrome_binary_path = os.path.expanduser("~/setup/chrome/chromedriver-mac-x64/chromedriver")
         # chrome开关帮助
         # https://peter.sh/experiments/chromium-command-line-switches/
         if platform.system() == 'Linux':
@@ -45,19 +48,25 @@ class ChromeDriver(IDriver):
             # 默认情况下，当Selenium WebDriver加载页面时,遵循normal的页面加载策略。始终建议您在页面加载缓慢时，停止下载其他资源 (例如图片、css、 js) 。
             # 不用等待，因为我们没用到dom
             options.page_load_strategy = 'none'
-            #
-            options.add_argument("--window-size=800,600")
+            options.add_argument("--remote-debugging-port=59314")
+            # 去掉全局监听
+            # options.add_argument("--remote-debugging-address=0.0.0.0")
+
+            options.add_argument("--window-size=1920,1080")
             options.binary_location = "/opt/google/chrome/chrome"
+            options.binary_location = os.path.expanduser("~/setup/chrome/chrome-stable-121/chrome-linux64/chrome")
+            chrome_binary_path = os.path.expanduser(config()['webdriver']['chrome']['bin'])
         elif config()['webdriver']['headless']:
             options.add_argument("--headless")
             options.add_argument("--window-size=1280,720")
+
         # 可以保存cookie
         options.add_argument(f"user-data-dir={getPath('webdriver.chrome.user_data_dir', create_if_not_exist=True)}")
         # user-agent
         # 默认：
         # Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/111.0.5563.64 Safari/537.36
         # options.add_argument('user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"')
-        options.add_argument('user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.5563.64 Safari/537.36"')
+        options.add_argument('user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"')
 
         options.add_argument('--proxy-server=%s:%s' % (config()['mitm']['host'], config()['mitm']['port']))
         options.add_argument('--ignore-certificate-errors')
@@ -92,7 +101,6 @@ class ChromeDriver(IDriver):
         capabilities = DesiredCapabilities.CHROME
         proxy.add_to_capabilities(capabilities)
 
-        chrome_binary_path = os.path.expanduser(config()['webdriver']['chrome']['bin'])
         self.browser = webdriver.Chrome(options=options,
                                         desired_capabilities=capabilities,
                                         executable_path=chrome_binary_path,
@@ -105,7 +113,10 @@ class ChromeDriver(IDriver):
         self.browser.execute_script("window.open('', '_blank')")
         # 避免被检测出
         # https://www.zenrows.com/blog/selenium-avoid-bot-detection#disable-automation-indicator-webdriver-flags
-        self.browser.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        try:
+            self.browser.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        except:
+            pass
         new_window_handles = self.browser.window_handles
         for _handle in new_window_handles:
             if _handle not in current_window_handles:
