@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "kill process in script"
-pkill -f 'pipenv run python main.py douyin-live-service'
+pkill -f 'bin/python main.py douyin-live-service'
 killall chromedriver chrome
 killall -9 chromedriver chrome
 sleep 1
