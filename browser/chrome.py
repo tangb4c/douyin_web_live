@@ -53,8 +53,9 @@ class ChromeDriver(IDriver):
             # options.add_argument("--remote-debugging-address=0.0.0.0")
 
             options.add_argument("--window-size=1920,1080")
-            options.binary_location = "/opt/google/chrome/chrome"
-            options.binary_location = os.path.expanduser("~/setup/chrome/chrome-stable-121/chrome-linux64/chrome")
+            #options.binary_location = "/opt/google/chrome/chrome"
+            #options.binary_location = os.path.expanduser("~/setup/chrome/chrome-stable-121/chrome-linux64/chrome")
+            options.binary_location = os.path.expanduser("~/setup/chrome/chrome-stable-127-r1313161/chrome")
             chrome_binary_path = os.path.expanduser(config()['webdriver']['chrome']['bin'])
         elif config()['webdriver']['headless']:
             options.add_argument("--headless")
